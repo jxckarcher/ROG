@@ -52,6 +52,7 @@
   gap: var(--sp-2);
   flex-shrink: 0;
   min-height: var(--hit-min);
+  cursor: text;
 }
 .term-prompt {
   font-family: var(--font-mono);
@@ -60,6 +61,7 @@
   white-space: nowrap;
   flex-shrink: 0;
   opacity: 0.7;
+  user-select: none;
 }
 .term-bare-input {
   flex: 1;
@@ -70,5 +72,8 @@
   font-size: 13px;
   outline: none;
   min-height: 24px;
+  caret-color: var(--accent-text);
+  cursor: text;
 }
 .term-bare-input::placeholder { color: var(--text-tertiary); }
+.term-input-row:focus-within { background: var(--surface-2); border-top-color: var(--accent); }

@@ -69,7 +69,7 @@ export default function TerminalPanel() {
         </button>
       </div>
 
-      <div className="term-output">
+      <div className="term-output" onClick={() => inputRef.current?.focus()}>
         {lines.map((l, i) => (
           <div key={i} className={`term-line line-${l.type}`}>
             <pre>{l.text}</pre>
@@ -79,7 +79,7 @@ export default function TerminalPanel() {
         <div ref={bottomRef} />
       </div>
 
-      <div className="term-input-row">
+      <div className="term-input-row" onClick={() => inputRef.current?.focus()}>
         <span className="term-prompt">{vps.user}@{vps.host} $</span>
         <input
           ref={inputRef}

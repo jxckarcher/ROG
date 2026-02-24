@@ -74,4 +74,5 @@
   background: var(--surface-1);
 }
 .chat-input { flex: 1; min-height: var(--hit-min); max-height: 120px; resize: none; }
-.chat-send  { width: var(--hit-min); height: var(--hit-min); padding: 0; flex-shrink: 0; }
+.chat-send  { width: var(--hit-min); height: var(--hit-min); padding: 0; flex-shrink: 0; color: #fff; }
+.chat-send svg { stroke: #fff; }

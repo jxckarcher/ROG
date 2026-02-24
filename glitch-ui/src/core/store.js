@@ -64,22 +64,57 @@ export const useStore = create((set, get) => ({
     const old = get().ws;
     if (old) { try { old.close(); } catch(_) {} }
     try {
-      const ws = new WebSocket(`ws://localhost:${VPS.tunnelPort}/?token=${GW_TOKEN}`);
+      // Use 127.0.0.1 to avoid IPv6 ::1 routing issues
+      const ws = new WebSocket(`ws://127.0.0.1:${VPS.tunnelPort}`);
+
       ws.onopen = () => {
-        set({ wsConnected: true });
-        ws.send(JSON.stringify({ type: 'subscribe', session: 'agent:main:main' }));
+        console.log('[WS] onopen fired — waiting for connect.challenge');
       };
+
       ws.onmessage = (ev) => {
+        console.log('[WS] message received:', ev.data.slice(0, 200));
         try {
-          const d = JSON.parse(ev.data);
-          const text = d.content || d.message || d.text || d.delta;
+          const msg = JSON.parse(ev.data);
+
+          // Step 1: server sends challenge → respond with connect handshake
+          if (msg.type === 'event' && msg.event === 'connect.challenge') {
+            ws.send(JSON.stringify({
+              type: 'req',
+              id: crypto.randomUUID(),
+              method: 'connect',
+              params: {
+                minProtocol: 3, maxProtocol: 3,
+                client: { id: 'glitch-ui', version: '0.2', platform: 'windows', mode: 'operator' },
+                role: 'operator',
+                scopes: ['operator.read', 'operator.write'],
+                caps: [], commands: [], permissions: {},
+                auth: { token: GW_TOKEN },
+                locale: 'en-GB',
+                userAgent: 'glitch-ui/0.2'
+              }
+            }));
+            return;
+          }
+
+          // Step 2: hello-ok → handshake complete, WS ready
+          if (msg.type === 'res' && msg.ok && msg.payload?.type === 'hello-ok') {
+            set({ wsConnected: true });
+            return;
+          }
+
+          // Step 3: incoming agent content (after connected)
+          if (!get().wsConnected) return;
+          const text = msg.content || msg.message || msg.text || msg.delta
+                    || msg.payload?.content || msg.payload?.message || msg.payload?.text;
           if (text) get()._push({ role: 'glitch', text, ts: Date.now() });
+
         } catch(_) {
           if (ev.data) get()._push({ role: 'glitch', text: ev.data, ts: Date.now() });
         }
       };
-      ws.onclose = () => set({ wsConnected: false, ws: null });
-      ws.onerror = () => set({ wsConnected: false });
+
+      ws.onclose = (e) => { console.log('[WS] closed — code:', e.code, 'reason:', e.reason); set({ wsConnected: false, ws: null }); };
+      ws.onerror = (e) => { console.error('[WS] error:', e); set({ wsConnected: false }); };
       set({ ws });
     } catch (e) { console.error('WS:', e); }
   },
@@ -94,7 +129,12 @@ export const useStore = create((set, get) => ({
     const { ws, wsConnected } = get();
     if (!ws || !wsConnected) return false;
     try {
-      ws.send(JSON.stringify({ type: 'message', session: 'agent:main:main', content: text, channel: 'cli' }));
+      ws.send(JSON.stringify({
+        type: 'req',
+        id: crypto.randomUUID(),
+        method: 'agent.message',
+        params: { content: text, session: 'main' }
+      }));
       return true;
     } catch(_) { return false; }
   },
@@ -110,16 +150,27 @@ export const useStore = create((set, get) => ({
     _push({ role: 'user', text, ts: Date.now() });
     set({ chatSending: true });
 
-    let sent = false;
-    if (wsConnected) {
-      sent = sendWs(text);
+    // Try live WebSocket first
+    if (wsConnected && sendWs(text)) {
+      set({ chatSending: false });
+      return;
     }
-    // Fallback: SSH CLI send (no live response, shows confirmation)
-    if (!sent) {
-      const escaped = text.replace(/"/g, '\\"');
-      const res = await runCmd(`openclaw message send --channel cli --message "${escaped}" 2>&1`);
-      _push({ role: 'glitch', text: res.stdout.trim() || '(sent via CLI fallback)', ts: Date.now() });
-    }
+
+    // Fallback: SSH agent run — returns response directly to stdout
+    const escaped = text.replace(/"/g, '\\"');
+    const res = await runCmd(`openclaw agent --agent main --message "${escaped}" --json 2>&1`);
+    const raw = res.stdout.trim() || res.stderr.trim();
+
+    // Parse openclaw agent --json response: result.payloads[].text
+    let reply = raw;
+    try {
+      const parsed = JSON.parse(raw);
+      reply = parsed.result?.payloads?.map(p => p.text).filter(Boolean).join('\n')
+           || parsed.response || parsed.content || parsed.message || parsed.output
+           || raw;
+    } catch(_) {}
+
+    _push({ role: 'glitch', text: reply || '(no response)', ts: Date.now() });
     set({ chatSending: false });
   },
 
