@@ -1,0 +1,104 @@
+/* ========================================
+   GLITCH UI — Theme System
+   CSS variables drive everything.
+   Swap data-theme to change the whole app.
+   ======================================== */
+
+:root, [data-theme="cyberpunk"] {
+  --accent:        #00f5d4;
+  --accent-dim:    #00f5d440;
+  --accent-2:      #f72585;
+  --bg-base:       #0a0a0f;
+  --bg-panel:      #12121a;
+  --bg-panel-2:    #1a1a26;
+  --bg-hover:      #ffffff0d;
+  --border:        #ffffff14;
+  --border-accent: #00f5d440;
+  --text:          #e8e8f0;
+  --text-dim:      #7070a0;
+  --text-muted:    #40406a;
+  --success:       #39d353;
+  --warn:          #f5a623;
+  --danger:        #f72585;
+  --glow:          0 0 12px #00f5d440;
+  --glow-strong:   0 0 24px #00f5d460;
+  --radius:        10px;
+  --radius-sm:     6px;
+  --font:          'Inter', system-ui, sans-serif;
+  --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
+  --sidebar-w:     220px;
+  --statusbar-h:   32px;
+  --transition:    0.15s ease;
+}
+
+[data-theme="midnight"] {
+  --accent:        #7c6af7;
+  --accent-dim:    #7c6af740;
+  --accent-2:      #f06292;
+  --bg-base:       #07070d;
+  --bg-panel:      #0f0f1a;
+  --bg-panel-2:    #16162a;
+  --border:        #ffffff10;
+  --border-accent: #7c6af740;
+  --text-dim:      #6060a0;
+  --glow:          0 0 12px #7c6af740;
+}
+
+[data-theme="matrix"] {
+  --accent:        #00ff41;
+  --accent-dim:    #00ff4130;
+  --accent-2:      #00cc33;
+  --bg-base:       #000000;
+  --bg-panel:      #050f05;
+  --bg-panel-2:    #0a1a0a;
+  --border:        #00ff4115;
+  --border-accent: #00ff4140;
+  --text:          #c0ffc0;
+  --text-dim:      #40804a;
+  --glow:          0 0 10px #00ff4140;
+}
+
+[data-theme="light"] {
+  --accent:        #6c63ff;
+  --accent-dim:    #6c63ff20;
+  --accent-2:      #e91e8c;
+  --bg-base:       #f0f0f8;
+  --bg-panel:      #ffffff;
+  --bg-panel-2:    #f5f5fd;
+  --bg-hover:      #00000008;
+  --border:        #00000012;
+  --border-accent: #6c63ff40;
+  --text:          #1a1a2e;
+  --text-dim:      #6060a0;
+  --text-muted:    #a0a0c0;
+  --glow:          0 0 12px #6c63ff20;
+}
+
+/* ========================================
+   GLOBAL BASE
+   ======================================== */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-base);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Typography */
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: -0.02em; }
+code, pre { font-family: var(--font-mono); }
+
+/* Focus */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

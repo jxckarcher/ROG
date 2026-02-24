@@ -1,0 +1,61 @@
+.overnight-card { transition: border-color var(--transition), background var(--transition); }
+.overnight-on   { border-color: var(--warn) !important; background: #f5a62310 !important; }
+
+.overnight-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.overnight-desc   { font-size: 13px; color: var(--text-dim); margin-top: 4px; line-height: 1.5; }
+.overnight-warning {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #f5a62320;
+  border: 1px solid var(--warn);
+  border-radius: var(--radius-sm);
+  color: var(--warn);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.toggle-btn {
+  width: 52px; height: 28px; border-radius: 14px;
+  border: none; cursor: pointer; position: relative;
+  transition: background var(--transition);
+  flex-shrink: 0;
+}
+.toggle-on  { background: var(--warn); }
+.toggle-off { background: var(--bg-panel); border: 1px solid var(--border); }
+.toggle-knob {
+  position: absolute; top: 3px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: white;
+  transition: left var(--transition);
+  display: block;
+}
+.toggle-on  .toggle-knob { left: 27px; }
+.toggle-off .toggle-knob { left: 3px; }
+
+.model-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+.model-name { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--accent); }
+.model-tag  { font-size: 11px; color: var(--text-dim); background: var(--bg-hover); padding: 2px 8px; border-radius: 20px; }
+.model-note { font-size: 12px; color: var(--text-dim); }
+.model-note code { color: var(--accent); }
+
+.sessions-pre {
+  font-family: var(--font-mono); font-size: 12px;
+  white-space: pre-wrap; color: var(--text);
+  background: var(--bg-panel); padding: 10px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+}
+
+.card-warn { border-color: #f5a62330 !important; }
+.guardrail-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.guardrail-list li {
+  padding: 6px 0;
+  padding-left: 16px;
+  position: relative;
+  font-size: 13px;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+.guardrail-list li::before { content: '→'; position: absolute; left: 0; color: var(--warn); }
+.guardrail-list a { color: var(--accent); }
+.guardrail-list code { color: var(--accent); font-family: var(--font-mono); }

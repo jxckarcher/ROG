@@ -1,0 +1,34 @@
+.memory-panel { display: flex; flex-direction: column; }
+
+.mem-content {
+  flex: 1; overflow-y: auto;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.mem-content pre {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  white-space: pre-wrap;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.mem-search { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.search-row { display: flex; gap: 10px; }
+.search-results {
+  flex: 1; overflow-y: auto;
+  background: var(--bg-panel-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+
+.mem-append { display: flex; flex-direction: column; gap: 12px; }
+.mem-append-hint { font-size: 13px; color: var(--text-dim); }
+.mem-textarea { resize: vertical; min-height: 100px; }
