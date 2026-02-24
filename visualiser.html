@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Music Visualiser</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; overflow: hidden; font-family: system-ui, sans-serif; user-select: none; }
+  canvas { display: block; }
+
+  #start { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center;
+           justify-content: center; background: #0a0a0a; z-index: 20; cursor: pointer; }
+  #start .title { color: #fff; font: bold 36px system-ui; margin-bottom: 8px; }
+  #start .sub { color: #888; font: 16px system-ui; margin-bottom: 32px; }
+  #start .btn { color: #fff; font: bold 22px system-ui; padding: 18px 48px; border: 2px solid #fff;
+                border-radius: 12px; transition: .2s; }
+  #start:hover .btn { background: #fff; color: #000; }
+
+  /* Menu toggle button */
+  #menu-btn { position: fixed; top: 16px; right: 16px; z-index: 15; width: 44px; height: 44px;
+              background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+              border-radius: 10px; cursor: pointer; display: none; backdrop-filter: blur(8px);
+              transition: .2s; }
+  #menu-btn:hover { background: rgba(255,255,255,0.25); }
+  #menu-btn span { display: block; width: 20px; height: 2px; background: #fff; margin: 4px auto;
+                   border-radius: 2px; transition: .3s; }
+  #menu-btn.open span:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+  #menu-btn.open span:nth-child(2) { opacity: 0; }
+  #menu-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+
+  /* Side menu */
+  #menu { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; z-index: 14;
+          background: rgba(15,15,20,0.92); backdrop-filter: blur(16px); border-left: 1px solid rgba(255,255,255,0.08);
+          padding: 70px 20px 20px; overflow-y: auto; transition: right .3s ease; }
+  #menu.open { right: 0; }
+
+  #menu h2 { color: #fff; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;
+             margin: 20px 0 12px; opacity: 0.5; }
+  #menu h2:first-child { margin-top: 0; }
+
+  /* Mode buttons */
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mode-btn { padding: 12px 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+              border-radius: 8px; color: #ccc; font-size: 13px; cursor: pointer; text-align: center;
+              transition: .2s; }
+  .mode-btn:hover { background: rgba(255,255,255,0.12); }
+  .mode-btn.active { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.4); color: #fff; }
+
+  /* Color theme buttons */
+  .color-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .color-btn { padding: 10px 4px; border-radius: 8px; color: #fff; font-size: 11px; cursor: pointer;
+               text-align: center; border: 2px solid transparent; transition: .2s; font-weight: 600; }
+  .color-btn.active { border-color: #fff; }
+
+  /* Sliders */
+  .slider-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+  .slider-row label { color: #aaa; font-size: 13px; min-width: 70px; }
+  .slider-row input[type=range] { flex: 1; accent-color: #888; }
+  .slider-row .val { color: #fff; font-size: 12px; min-width: 30px; text-align: right; }
+</style>
+</head>
+<body>
+
+<div id="start">
+  <div class="title">Music Visualiser</div>
+  <div class="sub">Uses your microphone to react to music</div>
+  <div class="btn">Start</div>
+</div>
+
+<button id="menu-btn"><span></span><span></span><span></span></button>
+
+<div id="menu">
+  <h2>Visualiser Mode</h2>
+  <div class="mode-grid">
+    <div class="mode-btn active" data-mode="circular">Circular</div>
+    <div class="mode-btn" data-mode="bars">Bars</div>
+    <div class="mode-btn" data-mode="wave">Wave</div>
+    <div class="mode-btn" data-mode="particles">Particles</div>
+    <div class="mode-btn" data-mode="candle">Candle</div>
+    <div class="mode-btn" data-mode="dna">DNA Helix</div>
+    <div class="mode-btn" data-mode="galaxy">Galaxy</div>
+    <div class="mode-btn" data-mode="terrain">Terrain</div>
+  </div>
+
+  <h2>Colour Theme</h2>
+  <div class="color-grid">
+    <div class="color-btn active" data-theme="rainbow" style="background:linear-gradient(135deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f)">Rainbow</div>
+    <div class="color-btn" data-theme="fire" style="background:linear-gradient(135deg,#f80,#f00,#a00)">Fire</div>
+    <div class="color-btn" data-theme="ice" style="background:linear-gradient(135deg,#0af,#08f,#a0f)">Ice</div>
+    <div class="color-btn" data-theme="neon" style="background:linear-gradient(135deg,#f0f,#0ff,#0f0)">Neon</div>
+    <div class="color-btn" data-theme="sunset" style="background:linear-gradient(135deg,#f50,#f08,#80f)">Sunset</div>
+    <div class="color-btn" data-theme="matrix" style="background:linear-gradient(135deg,#0a0,#0f0,#080)">Matrix</div>
+    <div class="color-btn" data-theme="ocean" style="background:linear-gradient(135deg,#006,#0af,#0fc)">Ocean</div>
+    <div class="color-btn" data-theme="lava" style="background:linear-gradient(135deg,#f00,#f80,#ff0)">Lava</div>
+    <div class="color-btn" data-theme="pastel" style="background:linear-gradient(135deg,#fac,#caf,#acf)">Pastel</div>
+  </div>
+
+  <h2>Settings</h2>
+  <div class="slider-row">
+    <label>Sensitivity</label>
+    <input type="range" id="sensitivity" min="1" max="10" value="5" step="0.5">
+    <span class="val" id="sens-val">5</span>
+  </div>
+  <div class="slider-row">
+    <label>Trail</label>
+    <input type="range" id="trail" min="1" max="20" value="15" step="1">
+    <span class="val" id="trail-val">15</span>
+  </div>
+  <div class="slider-row">
+    <label>Speed</label>
+    <input type="range" id="speed" min="1" max="10" value="5" step="0.5">
+    <span class="val" id="speed-val">5</span>
+  </div>
+</div>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let analyser, dataArray, bufferLength, audioCtx, gainNode;
+
+// --- State ---
+let mode = 'circular';
+let theme = 'rainbow';
+let sensitivity = 5;
+let trail = 15;
+let speed = 5;
+let hueOffset = 0;
+let particles = [];
+let time = 0;
+
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+addEventListener('resize', resize);
+resize();
+
+// --- Colour themes ---
+const themes = {
+  rainbow:  (t, val) => `hsl(${t % 360}, 90%, ${40 + val * 35}%)`,
+  fire:     (t, val) => `hsl(${(t % 60) - 10}, 100%, ${30 + val * 40}%)`,
+  ice:      (t, val) => `hsl(${200 + (t % 60)}, 85%, ${35 + val * 40}%)`,
+  neon:     (t, val) => `hsl(${(t * 3) % 360}, 100%, ${50 + val * 25}%)`,
+  sunset:   (t, val) => `hsl(${((t % 80) + 340) % 360}, 90%, ${35 + val * 35}%)`,
+  matrix:   (t, val) => `hsl(${120 + (t % 20) - 10}, 100%, ${20 + val * 50}%)`,
+  ocean:    (t, val) => `hsl(${190 + (t % 40)}, 80%, ${25 + val * 45}%)`,
+  lava:     (t, val) => `hsl(${(t % 50)}, 100%, ${25 + val * 45}%)`,
+  pastel:   (t, val) => `hsl(${t % 360}, 60%, ${65 + val * 20}%)`,
+};
+
+function getColor(index, val) {
+  return themes[theme](index + hueOffset, val);
+}
+function getColorH(h, val) {
+  return themes[theme](h + hueOffset, val);
+}
+
+// --- Menu logic ---
+const menuBtn = document.getElementById('menu-btn');
+const menu = document.getElementById('menu');
+menuBtn.addEventListener('click', () => {
+  menuBtn.classList.toggle('open');
+  menu.classList.toggle('open');
+});
+
+document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.mode-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  mode = b.dataset.mode;
+  particles = [];
+}));
+
+document.querySelectorAll('.color-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.color-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  theme = b.dataset.theme;
+}));
+
+document.getElementById('sensitivity').addEventListener('input', e => {
+  sensitivity = parseFloat(e.target.value);
+  document.getElementById('sens-val').textContent = sensitivity;
+  if (gainNode) gainNode.gain.value = sensitivity * 1.5;
+});
+document.getElementById('trail').addEventListener('input', e => {
+  trail = parseInt(e.target.value);
+  document.getElementById('trail-val').textContent = trail;
+});
+document.getElementById('speed').addEventListener('input', e => {
+  speed = parseFloat(e.target.value);
+  document.getElementById('speed-val').textContent = speed;
+});
+
+// --- Audio setup ---
+document.getElementById('start').addEventListener('click', async () => {
+  document.getElementById('start').style.display = 'none';
+  menuBtn.style.display = 'flex';
+  audioCtx = new AudioContext();
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const source = audioCtx.createMediaStreamSource(stream);
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = sensitivity * 1.5;
+  source.connect(gainNode);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  analyser.minDecibels = -100;
+  analyser.maxDecibels = -10;
+  analyser.smoothingTimeConstant = 0.75;
+  bufferLength = analyser.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+  gainNode.connect(analyser);
+  draw();
+});
+
+// --- Helpers ---
+function getAvg() {
+  let s = 0;
+  for (let i = 0; i < bufferLength; i++) s += dataArray[i];
+  return Math.min((s / bufferLength) * 2, 255);
+}
+function getVal(i) {
+  return Math.min(dataArray[i] / 255 * 2.5, 1);
+}
+function getBass() {
+  let s = 0;
+  const n = Math.floor(bufferLength * 0.15);
+  for (let i = 0; i < n; i++) s += dataArray[i];
+  return Math.min(s / n * 2, 255);
+}
+
+// ==================== VISUALISER MODES ====================
+
+function drawCircular(avg) {
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const maxR = Math.min(cx, cy) * 0.85;
+  const barCount = bufferLength;
+
+  for (let i = 0; i < barCount; i++) {
+    const val = getVal(i);
+    const angle = (i / barCount) * Math.PI * 2;
+    const innerR = maxR * 0.25 + avg * 0.3;
+    const barH = val * maxR * 0.65;
+    const x1 = cx + Math.cos(angle) * innerR;
+    const y1 = cy + Math.sin(angle) * innerR;
+    const x2 = cx + Math.cos(angle) * (innerR + barH);
+    const y2 = cy + Math.sin(angle) * (innerR + barH);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = getColor((i / barCount) * 360, val);
+    ctx.lineWidth = Math.max(2, (canvas.width / barCount) * 0.7);
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  // Centre glow
+  const glowR = 30 + avg * 1.5;
+  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowR);
+  grad.addColorStop(0, getColorH(0, 1));
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Waveform ring
+  analyser.getByteTimeDomainData(dataArray);
+  ctx.beginPath();
+  for (let i = 0; i < bufferLength; i++) {
+    const val = dataArray[i] / 128 - 1;
+    const angle = (i / bufferLength) * Math.PI * 2;
+    const r = maxR * 0.25 + avg * 0.3 + val * 60;
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.strokeStyle = getColorH(180, 0.7);
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  analyser.getByteFrequencyData(dataArray);
+}
+
+function drawBars(avg) {
+  const w = canvas.width, h = canvas.height;
+  const count = 64;
+  const step = Math.floor(bufferLength / count);
+  const barW = (w / count) * 0.8;
+  const gap = (w / count) * 0.2;
+
+  for (let i = 0; i < count; i++) {
+    const val = getVal(i * step);
+    const barH = val * h * 0.75;
+    const x = i * (barW + gap) + gap / 2;
+
+    // Main bar
+    const grad = ctx.createLinearGradient(x, h, x, h - barH);
+    grad.addColorStop(0, getColor((i / count) * 360, val));
+    grad.addColorStop(1, getColor((i / count) * 360 + 60, val * 0.5));
+    ctx.fillStyle = grad;
+    ctx.fillRect(x, h - barH, barW, barH);
+
+    // Reflection
+    ctx.globalAlpha = 0.15;
+    ctx.fillRect(x, h, barW, barH * 0.3);
+    ctx.globalAlpha = 1;
+
+    // Top cap
+    ctx.fillStyle = getColor((i / count) * 360 + 30, 1);
+    ctx.fillRect(x, h - barH - 4, barW, 4);
+  }
+}
+
+function drawWave(avg) {
+  const w = canvas.width, h = canvas.height;
+
+  // Draw 3 layered waves
+  for (let layer = 0; layer < 3; layer++) {
+    analyser.getByteTimeDomainData(dataArray);
+    ctx.beginPath();
+    const sliceW = w / bufferLength;
+    for (let i = 0; i < bufferLength; i++) {
+      const val = dataArray[i] / 128 - 1;
+      const amplitude = (h * 0.3) * (1 + layer * 0.3);
+      const y = h / 2 + val * amplitude + Math.sin(time * 0.02 + layer) * 20;
+      const x = i * sliceW;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = getColor(layer * 120, 0.8);
+    ctx.lineWidth = 3 - layer * 0.5;
+    ctx.globalAlpha = 1 - layer * 0.25;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Fill under wave
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    ctx.fillStyle = getColor(layer * 120, 0.3);
+    ctx.globalAlpha = 0.05 + avg / 2000;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawParticles(avg) {
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const bass = getBass();
+
+  // Spawn particles based on volume
+  const spawnCount = Math.floor(avg / 20);
+  for (let i = 0; i < spawnCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const spd = 1 + Math.random() * 3 + bass / 60;
+    particles.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * spd,
+      vy: Math.sin(angle) * spd,
+      life: 1,
+      decay: 0.005 + Math.random() * 0.015,
+      size: 2 + Math.random() * 4 + bass / 80,
+      hue: Math.random() * 360,
+    });
+  }
+
+  // Update & draw
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx * speed * 0.4;
+    p.y += p.vy * speed * 0.4;
+    p.life -= p.decay;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fillStyle = getColor(p.hue, p.life);
+    ctx.globalAlpha = p.life * 0.8;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Keep particle count reasonable
+  if (particles.length > 1500) particles.splice(0, particles.length - 1500);
+
+  // Centre pulse
+  const pulseR = 20 + bass * 0.5;
+  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pulseR);
+  grad.addColorStop(0, getColorH(0, 1));
+  grad.addColorStop(0.5, getColorH(60, 0.5));
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, pulseR, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawCandle(avg) {
+  const cx = canvas.width / 2, cy = canvas.height;
+  const bass = getBass();
+
+  // Wick
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 30);
+  ctx.lineTo(cx, cy - 80);
+  ctx.strokeStyle = '#654';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Candle body
+  const bodyW = 50;
+  const bodyH = 120;
+  const grad = ctx.createLinearGradient(cx - bodyW, cy - bodyH, cx + bodyW, cy);
+  grad.addColorStop(0, '#eed');
+  grad.addColorStop(1, '#ccb');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.roundRect(cx - bodyW / 2, cy - bodyH, bodyW, bodyH, [6, 6, 0, 0]);
+  ctx.fill();
+
+  // Multiple flame layers for realism
+  const flameLayers = 6;
+  const baseH = 80 + avg * 1.2 + bass * 0.5;
+  const flameBottom = cy - bodyH - 10;
+
+  for (let l = flameLayers - 1; l >= 0; l--) {
+    const t = l / flameLayers;
+    const flameH = baseH * (0.4 + t * 0.6);
+    const flameW = (20 + avg * 0.15) * (0.3 + t * 0.7);
+    const wobble = Math.sin(time * 0.1 * speed + l) * (5 + avg * 0.08);
+    const wobble2 = Math.cos(time * 0.07 * speed + l * 2) * 3;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, flameBottom);
+    ctx.bezierCurveTo(
+      cx - flameW + wobble2, flameBottom - flameH * 0.3,
+      cx - flameW * 0.6 + wobble, flameBottom - flameH * 0.7,
+      cx + wobble * 0.5, flameBottom - flameH
+    );
+    ctx.bezierCurveTo(
+      cx + flameW * 0.6 - wobble, flameBottom - flameH * 0.7,
+      cx + flameW - wobble2, flameBottom - flameH * 0.3,
+      cx, flameBottom
+    );
+
+    const flameGrad = ctx.createRadialGradient(
+      cx + wobble * 0.3, flameBottom - flameH * 0.4, 0,
+      cx, flameBottom - flameH * 0.3, flameH * 0.8
+    );
+
+    if (theme === 'fire' || theme === 'lava' || theme === 'rainbow') {
+      const innerColors = ['#fff', '#ffa', '#f80', '#f40', '#a00'];
+      flameGrad.addColorStop(0, innerColors[Math.min(l, 4)]);
+      flameGrad.addColorStop(1, 'transparent');
+    } else {
+      flameGrad.addColorStop(0, getColorH(l * 30, 1 - t * 0.5));
+      flameGrad.addColorStop(1, 'transparent');
+    }
+
+    ctx.fillStyle = flameGrad;
+    ctx.globalAlpha = 0.4 + t * 0.4;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Ember particles
+  const emberCount = Math.floor(avg / 25);
+  for (let i = 0; i < emberCount; i++) {
+    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+    const spd = 0.5 + Math.random() * 2;
+    particles.push({
+      x: cx + (Math.random() - 0.5) * 20,
+      y: flameBottom - baseH * 0.5,
+      vx: Math.cos(angle) * spd + (Math.random() - 0.5),
+      vy: Math.sin(angle) * spd - 1,
+      life: 1,
+      decay: 0.01 + Math.random() * 0.02,
+      size: 1 + Math.random() * 2,
+      hue: Math.random() * 50 + 10,
+    });
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx * speed * 0.3;
+    p.y += p.vy * speed * 0.3;
+    p.vy -= 0.03;
+    p.life -= p.decay;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fillStyle = getColor(p.hue, p.life);
+    ctx.globalAlpha = p.life;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  if (particles.length > 500) particles.splice(0, particles.length - 500);
+
+  // Glow around flame
+  const glowR = 60 + avg * 1.2;
+  const glow = ctx.createRadialGradient(cx, flameBottom - baseH * 0.4, 0, cx, flameBottom - baseH * 0.3, glowR);
+  glow.addColorStop(0, getColorH(30, 0.5));
+  glow.addColorStop(1, 'transparent');
+  ctx.globalAlpha = 0.2;
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(cx, flameBottom - baseH * 0.3, glowR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawDNA(avg) {
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2;
+  const count = 40;
+  const spacing = h / count;
+
+  for (let i = 0; i < count; i++) {
+    const val = getVal(Math.floor(i / count * bufferLength));
+    const y = i * spacing;
+    const phase = time * 0.03 * speed + i * 0.25;
+    const x1 = cx + Math.sin(phase) * (100 + val * 150);
+    const x2 = cx + Math.sin(phase + Math.PI) * (100 + val * 150);
+
+    // Connecting bar
+    ctx.beginPath();
+    ctx.moveTo(x1, y);
+    ctx.lineTo(x2, y);
+    ctx.strokeStyle = getColor(i * 9, 0.3);
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Nodes
+    const nodeSize = 4 + val * 10;
+    ctx.beginPath();
+    ctx.arc(x1, y, nodeSize, 0, Math.PI * 2);
+    ctx.fillStyle = getColor(i * 9, val);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x2, y, nodeSize, 0, Math.PI * 2);
+    ctx.fillStyle = getColor(i * 9 + 180, val);
+    ctx.fill();
+  }
+}
+
+function drawGalaxy(avg) {
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const bass = getBass();
+  const arms = 4;
+  const pointsPerArm = 80;
+
+  for (let a = 0; a < arms; a++) {
+    const armOffset = (a / arms) * Math.PI * 2;
+    ctx.beginPath();
+    for (let i = 0; i < pointsPerArm; i++) {
+      const t = i / pointsPerArm;
+      const val = getVal(Math.floor(t * bufferLength));
+      const dist = t * Math.min(cx, cy) * 0.8 + val * 40;
+      const angle = armOffset + t * 3 + time * 0.005 * speed;
+      const x = cx + Math.cos(angle) * dist;
+      const y = cy + Math.sin(angle) * dist * 0.6; // Tilt
+
+      const starSize = 1 + val * 5 + (1 - t) * 2;
+      ctx.fillStyle = getColor(a * 90 + t * 180, val);
+      ctx.globalAlpha = 0.5 + val * 0.5;
+      ctx.beginPath();
+      ctx.arc(x, y, starSize, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // Core glow
+  const coreR = 30 + bass * 0.5;
+  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+  grad.addColorStop(0, getColorH(0, 1));
+  grad.addColorStop(0.4, getColorH(60, 0.6));
+  grad.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawTerrain(avg) {
+  const w = canvas.width, h = canvas.height;
+  const rows = 20;
+  const cols = 60;
+  const bass = getBass();
+
+  for (let r = 0; r < rows; r++) {
+    const rowT = r / rows;
+    const y = h * 0.3 + rowT * h * 0.65;
+    const perspective = 0.3 + rowT * 0.7;
+
+    ctx.beginPath();
+    for (let c = 0; c <= cols; c++) {
+      const colT = c / cols;
+      const freqIdx = Math.floor(colT * bufferLength);
+      const val = getVal(freqIdx);
+      const x = colT * w;
+      const elevation = val * 100 * perspective + Math.sin(colT * 8 + time * 0.02 * speed + r * 0.5) * 15;
+      const py = y - elevation;
+      c === 0 ? ctx.moveTo(x, py) : ctx.lineTo(x, py);
+    }
+    ctx.strokeStyle = getColor(r * 18, rowT);
+    ctx.lineWidth = 1 + rowT * 2;
+    ctx.globalAlpha = 0.3 + rowT * 0.7;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // Horizon glow
+  const grad = ctx.createLinearGradient(0, h * 0.2, 0, h * 0.5);
+  grad.addColorStop(0, getColorH(0, 0.4));
+  grad.addColorStop(1, 'transparent');
+  ctx.globalAlpha = 0.1 + avg / 500;
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h * 0.5);
+  ctx.globalAlpha = 1;
+}
+
+// ==================== MAIN DRAW LOOP ====================
+
+function draw() {
+  requestAnimationFrame(draw);
+  analyser.getByteFrequencyData(dataArray);
+  time += speed * 0.5;
+
+  // Fade trail
+  const fadeAlpha = trail / 100;
+  ctx.fillStyle = `rgba(0,0,0,${fadeAlpha})`;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const avg = getAvg();
+  hueOffset += (0.3 + avg * 0.02) * speed * 0.2;
+
+  switch (mode) {
+    case 'circular':  drawCircular(avg); break;
+    case 'bars':      drawBars(avg); break;
+    case 'wave':      drawWave(avg); break;
+    case 'particles': drawParticles(avg); break;
+    case 'candle':    drawCandle(avg); break;
+    case 'dna':       drawDNA(avg); break;
+    case 'galaxy':    drawGalaxy(avg); break;
+    case 'terrain':   drawTerrain(avg); break;
+  }
+}
+</script>
+</body>
+</html>
