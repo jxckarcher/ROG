@@ -1,0 +1,48 @@
+/* ============================================
+   DESIGN TOKENS — single source of truth
+   Never use raw values in components.
+   ============================================ */
+
+:root {
+  /* Spacing — 8pt grid */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  /* Radii */
+  --r-sm:  10px;
+  --r-md:  14px;
+  --r-lg:  20px;
+  --r-xl:  28px;
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+
+  --text-caption:     12px;
+  --text-body:        14px;
+  --text-body-strong: 14px;
+  --text-title:       18px;
+  --text-headline:    22px;
+
+  --lh-caption: 16px;
+  --lh-body:    20px;
+  --lh-title:   24px;
+  --lh-headline: 28px;
+
+  /* Hit targets */
+  --hit-min: 44px;
+
+  /* Sidebar */
+  --sidebar-w:     260px;
+  --topbar-h:      48px;
+  --statusbar-h:   28px;
+
+  /* Transition */
+  --t-fast: 0.1s ease;
+  --t-base: 0.18s ease;
+}

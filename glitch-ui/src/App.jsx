@@ -1,6 +1,6 @@
 import { useStore } from './core/store';
 import Sidebar from './ui/components/Sidebar';
-import StatusBar from './ui/components/StatusBar';
+import TopBar from './ui/components/TopBar';
 import ConnectionPanel from './modules/connection/ConnectionPanel';
 import ChatPanel from './modules/chat/ChatPanel';
 import SchedulerPanel from './modules/scheduler/SchedulerPanel';
@@ -23,13 +23,13 @@ export default function App() {
   const Panel = PANELS[activeModule] || ChatPanel;
 
   return (
-    <div className="app-shell">
+    <div className="app">
       <Sidebar />
       <div className="app-main">
-        <div className="app-content">
+        <TopBar />
+        <div className="app-panel">
           <Panel />
         </div>
-        <StatusBar />
       </div>
     </div>
   );

@@ -1,97 +1,85 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../core/store';
+import { Send, Wifi, WifiOff } from 'lucide-react';
 import './ChatPanel.css';
 
 export default function ChatPanel() {
-  const { connected, runCmd } = useStore();
-  const [messages, setMessages] = useState([
-    { role: 'system', text: 'Chat relays messages to Glitch via openclaw. Connect first.' }
-  ]);
+  const { connected, wsConnected, chatMessages, chatSending, sendChat, clearChat, connectWs, tunnelActive } = useStore();
   const [input, setInput] = useState('');
-  const [sending, setSending] = useState(false);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatMessages]);
 
   const send = async () => {
-    if (!input.trim() || sending || !connected) return;
     const text = input.trim();
+    if (!text || chatSending || !connected) return;
     setInput('');
-    setSending(true);
-
-    setMessages(m => [...m, { role: 'user', text }]);
-
-    // Send via openclaw message
-    const escaped = text.replace(/"/g, '\\"').replace(/`/g, '\\`');
-    const res = await runCmd(
-      `openclaw message send --channel cli --message "${escaped}" 2>&1`
-    );
-
-    const reply = res.stdout.trim() || res.stderr.trim() || '(no response)';
-    setMessages(m => [...m, { role: 'glitch', text: reply }]);
-    setSending(false);
+    await sendChat(text);
     inputRef.current?.focus();
   };
 
-  const onKey = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-  };
-
-  const clearChat = () => setMessages([
-    { role: 'system', text: 'Chat cleared.' }
-  ]);
-
   return (
-    <div className="panel chat-panel">
-      <div className="panel-header">
-        <h2>Chat</h2>
-        <button className="btn-ghost" onClick={clearChat}>Clear</button>
-      </div>
+    <div className="chat-panel panel-wrap">
+      {!connected && <div className="chat-hint">Go to Connection and connect first.</div>}
+
+      {connected && (
+        <div className="chat-status-bar">
+          {wsConnected
+            ? <><Wifi size={12} /><span className="chat-status-on">Live</span></>
+            : <><WifiOff size={12} /><span className="chat-status-off">SSH fallback</span>
+                {tunnelActive
+                  ? <button className="btn-ghost" onClick={connectWs}>Reconnect</button>
+                  : <span className="chat-status-hint">Start tunnel for live mode</span>
+                }
+              </>
+          }
+          <button className="btn-ghost" style={{ marginLeft: 'auto' }} onClick={clearChat}>Clear</button>
+        </div>
+      )}
 
       <div className="chat-messages">
-        {messages.map((m, i) => (
-          <div key={i} className={`chat-msg msg-${m.role}`}>
-            {m.role !== 'user' && (
-              <span className="msg-label">{m.role === 'glitch' ? '⚡ Glitch' : 'System'}</span>
-            )}
-            <div className="msg-bubble">
-              <pre>{m.text}</pre>
-            </div>
-          </div>
-        ))}
-        {sending && (
+        {chatMessages.map((m, i) => <ChatMsg key={i} msg={m} />)}
+        {chatSending && (
           <div className="chat-msg msg-glitch">
-            <span className="msg-label">⚡ Glitch</span>
-            <div className="msg-bubble typing">
-              <span /><span /><span />
-            </div>
+            <div className="msg-av">G</div>
+            <div className="msg-bubble bubble-glitch typing-dots"><span /><span /><span /></div>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
-      <div className="chat-input-row">
+      <div className="chat-composer">
         <textarea
           ref={inputRef}
-          className="chat-input"
-          placeholder={connected ? 'Message Glitch…' : 'Connect first to chat'}
+          className="input chat-input"
+          placeholder={connected ? 'Message Glitch… (Enter to send)' : 'Connect first'}
           value={input}
           onChange={e => setInput(e.target.value)}
-          onKeyDown={onKey}
-          disabled={!connected || sending}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+          disabled={!connected || chatSending}
           rows={2}
         />
-        <button
-          className="btn btn-primary chat-send"
-          onClick={send}
-          disabled={!connected || sending || !input.trim()}
-        >
-          Send
+        <button className="btn btn-primary chat-send" onClick={send}
+          disabled={!connected || chatSending || !input.trim()}>
+          <Send size={16} />
         </button>
       </div>
+    </div>
+  );
+}
+
+function ChatMsg({ msg }) {
+  const ts = msg.ts ? new Date(msg.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+  if (msg.role === 'system') return <div className="chat-system">{msg.text}</div>;
+  return (
+    <div className={`chat-msg msg-${msg.role}`}>
+      {msg.role === 'glitch' && <div className="msg-av">G</div>}
+      <div className={`msg-bubble bubble-${msg.role}`}>
+        <pre className="msg-text">{msg.text}</pre>
+        <span className="msg-ts">{ts}</span>
+      </div>
+      {msg.role === 'user' && <div className="msg-av msg-av-user">U</div>}
     </div>
   );
 }

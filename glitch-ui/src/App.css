@@ -1,10 +1,11 @@
 @import './core/theme.css';
 @import './ui/components/shared.css';
 
-.app-shell {
+.app {
   display: flex;
   height: 100vh;
   overflow: hidden;
+  background: var(--bg);
 }
 
 .app-main {
@@ -15,7 +16,7 @@
   min-width: 0;
 }
 
-.app-content {
+.app-panel {
   flex: 1;
   overflow: hidden;
 }

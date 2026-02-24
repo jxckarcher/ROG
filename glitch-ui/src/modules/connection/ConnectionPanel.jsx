@@ -1,110 +1,102 @@
 import { useState } from 'react';
 import { useStore } from '../../core/store';
+import { RefreshCw, Plug, PlugZap, Activity, Send } from 'lucide-react';
 import './ConnectionPanel.css';
 
 export default function ConnectionPanel() {
   const { connected, connecting, connectionError, tunnelActive,
           connect, disconnect, startTunnel, stopTunnel, runCmd, vps } = useStore();
-  const [log, setLog] = useState('');
-  const [testing, setTesting] = useState(false);
+  const [output, setOutput] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const handleConnect = async () => {
-    await connect();
+  const run = async (cmd, label) => {
+    setBusy(true);
+    setOutput(`▸ ${label}\n`);
+    const res = await runCmd(cmd);
+    setOutput(`▸ ${label}\n${res.stdout}${res.stderr}`);
+    setBusy(false);
   };
 
-  const handleTunnel = async () => {
-    if (tunnelActive) await stopTunnel();
-    else await startTunnel();
-  };
-
-  const quickCheck = async () => {
-    setTesting(true);
-    setLog('Running health check...\n');
-    const checks = [
-      { label: 'SSH',        cmd: 'echo "SSH_OK"' },
-      { label: 'Gateway',    cmd: 'systemctl --user status openclaw-gateway.service --no-pager | head -4' },
-      { label: 'Port 18789', cmd: "ss -lntp | grep ':18789'" },
-      { label: 'Telegram',   cmd: "openclaw status 2>&1 | grep -A2 'Telegram'" },
-    ];
-    let out = '';
-    for (const c of checks) {
-      const res = await runCmd(c.cmd);
-      out += `── ${c.label} ──\n${res.stdout || res.stderr}\n`;
-      setLog(out);
-    }
-    setTesting(false);
-  };
-
-  const restartGateway = async () => {
-    setLog('Restarting gateway...\n');
-    const res = await runCmd('systemctl --user restart openclaw-gateway.service && sleep 1 && systemctl --user status openclaw-gateway.service --no-pager | head -6');
-    setLog(res.stdout + res.stderr);
-  };
+  const healthCheck = () => run(
+    'echo "── SSH ──" && echo OK && echo "── Gateway ──" && systemctl --user status openclaw-gateway.service --no-pager | head -5 && echo "── Port ──" && ss -lntp | grep ":18789" && echo "── Telegram ──" && openclaw status 2>&1 | grep -A2 "Telegram"',
+    'Health Check'
+  );
 
   return (
-    <div className="panel conn-panel">
-      <div className="panel-header">
-        <h2>Connection</h2>
-        <span className="panel-sub">{vps.user}@{vps.host}</span>
-      </div>
-
-      <div className="conn-cards">
-        {/* SSH card */}
-        <div className={`conn-card ${connected ? 'card-ok' : 'card-off'}`}>
-          <div className="conn-card-title">SSH</div>
-          <div className={`conn-status-dot ${connected ? 'on' : 'off'}`} />
-          <div className="conn-card-val">{connected ? 'Connected' : connectionError || 'Disconnected'}</div>
+    <div className="panel-wrap">
+      <div className="panel-body">
+        {/* SSH row */}
+        <div className="card conn-row">
+          <div className="conn-info">
+            <div className="conn-label">
+              <span className={`dot ${connected ? 'dot-on' : 'dot-off'}`} />
+              SSH
+            </div>
+            <div className="conn-host">{vps.user}@{vps.host}</div>
+            {connectionError && <div className="conn-error">{connectionError}</div>}
+          </div>
           <button
-            className={`btn ${connected ? 'btn-danger' : 'btn-primary'}`}
-            onClick={connected ? disconnect : handleConnect}
+            className={`btn ${connected ? 'btn-secondary' : 'btn-primary'}`}
+            onClick={connected ? disconnect : connect}
             disabled={connecting}
           >
-            {connecting ? 'Connecting…' : connected ? 'Disconnect' : 'Connect'}
+            {connecting ? <><RefreshCw size={14} className="spin" /> Connecting…</>
+              : connected ? <><Plug size={14} /> Disconnect</>
+              : <><PlugZap size={14} /> Connect</>}
           </button>
         </div>
 
-        {/* Tunnel card */}
-        <div className={`conn-card ${tunnelActive ? 'card-ok' : 'card-off'}`}>
-          <div className="conn-card-title">SSH Tunnel</div>
-          <div className={`conn-status-dot ${tunnelActive ? 'on' : 'off'}`} />
-          <div className="conn-card-val">
-            {tunnelActive ? `localhost:${vps.tunnelPort} active` : 'Inactive'}
+        {/* Tunnel row */}
+        <div className="card conn-row">
+          <div className="conn-info">
+            <div className="conn-label">
+              <span className={`dot ${tunnelActive ? 'dot-on' : 'dot-off'}`} />
+              SSH Tunnel
+            </div>
+            <div className="conn-host">
+              {tunnelActive ? `localhost:${vps.tunnelPort} → gateway` : 'Inactive — needed for live chat'}
+            </div>
           </div>
-          <button className={`btn ${tunnelActive ? 'btn-warn' : 'btn-secondary'}`} onClick={handleTunnel}>
+          <button
+            className={`btn ${tunnelActive ? 'btn-secondary' : 'btn-secondary'}`}
+            onClick={tunnelActive ? stopTunnel : startTunnel}
+            disabled={!connected}
+          >
             {tunnelActive ? 'Stop Tunnel' : 'Start Tunnel'}
           </button>
         </div>
 
         {/* Quick actions */}
-        <div className="conn-card card-neutral">
-          <div className="conn-card-title">Quick Actions</div>
+        <div className="card">
+          <div className="card-header">Quick Actions</div>
           <div className="conn-actions">
-            <button className="btn btn-secondary" onClick={quickCheck} disabled={testing || !connected}>
-              {testing ? 'Checking…' : 'Health Check'}
+            <button className="btn btn-secondary btn-sm" onClick={healthCheck} disabled={!connected || busy}>
+              <Activity size={13} /> Health Check
             </button>
-            <button className="btn btn-secondary" onClick={restartGateway} disabled={!connected}>
-              Restart Gateway
+            <button className="btn btn-secondary btn-sm"
+              onClick={() => run('systemctl --user restart openclaw-gateway.service && sleep 1 && systemctl --user status openclaw-gateway.service --no-pager | head -6', 'Restart Gateway')}
+              disabled={!connected || busy}>
+              <RefreshCw size={13} /> Restart Gateway
             </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => runCmd('openclaw message send --channel telegram --target 7117966167 --message "PING_FROM_GLITCH_UI"')}
-              disabled={!connected}
-            >
-              Ping Telegram
+            <button className="btn btn-secondary btn-sm"
+              onClick={() => run('openclaw message send --channel telegram --target 7117966167 --message "PING_FROM_GLITCH_UI" 2>&1', 'Ping Telegram')}
+              disabled={!connected || busy}>
+              <Send size={13} /> Ping Telegram
             </button>
           </div>
         </div>
-      </div>
 
-      {log && (
-        <div className="conn-log">
-          <div className="conn-log-header">
-            Output
-            <button className="btn-ghost" onClick={() => setLog('')}>Clear</button>
+        {/* Output */}
+        {output && (
+          <div className="card conn-output-card">
+            <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between' }}>
+              Output
+              <button className="btn-ghost" onClick={() => setOutput('')}>Clear</button>
+            </div>
+            <pre className="conn-output">{output}</pre>
           </div>
-          <pre>{log}</pre>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

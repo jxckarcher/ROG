@@ -1,34 +1,27 @@
-.memory-panel { display: flex; flex-direction: column; }
-
-.mem-content {
-  flex: 1; overflow-y: auto;
-  background: var(--bg-panel-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
+.mem-tabbar {
+  display: flex; align-items: center; gap: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 var(--sp-6);
+  background: var(--surface-1);
+  min-height: 40px;
+  flex-shrink: 0;
 }
-.mem-content pre {
-  font-family: var(--font-mono);
-  font-size: 13px;
-  white-space: pre-wrap;
-  color: var(--text);
-  line-height: 1.6;
+.mem-tab {
+  padding: 0 var(--sp-4);
+  height: 40px;
+  border: none; border-bottom: 2px solid transparent;
+  background: transparent; color: var(--text-secondary);
+  font-family: var(--font-sans); font-size: var(--text-body); font-weight: 500;
+  cursor: pointer; transition: color var(--t-fast), border-color var(--t-fast);
+  white-space: nowrap;
 }
-
-.mem-search { display: flex; flex-direction: column; gap: 12px; flex: 1; }
-.search-row { display: flex; gap: 10px; }
-.search-results {
-  flex: 1; overflow-y: auto;
-  background: var(--bg-panel-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  white-space: pre-wrap;
-  color: var(--text);
-}
-
-.mem-append { display: flex; flex-direction: column; gap: 12px; }
-.mem-append-hint { font-size: 13px; color: var(--text-dim); }
-.mem-textarea { resize: vertical; min-height: 100px; }
+.mem-tab:hover { color: var(--text-primary); }
+.mem-tab-active { color: var(--accent-text); border-bottom-color: var(--accent); }
+.mem-content-card { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.mem-pre { font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; color: var(--text-primary); line-height: 1.6; overflow-y: auto; flex: 1; }
+.mem-search-row { display: flex; gap: var(--sp-3); }
+.mem-append-hint { font-size: var(--text-caption); color: var(--text-secondary); margin: var(--sp-2) 0; }
+.mem-append-hint code { color: var(--accent-text); font-family: var(--font-mono); }
+.mem-textarea { width: 100%; margin-top: var(--sp-2); min-height: 100px; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

@@ -1,53 +1,9 @@
-.conn-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.conn-card {
-  background: var(--bg-panel-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.card-ok  { border-color: #39d35330; }
-.card-off { border-color: var(--border); }
-.card-neutral { border-color: var(--border-accent); }
-
-.conn-card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
-.conn-card-val   { font-size: 13px; color: var(--text); font-family: var(--font-mono); }
-.conn-status-dot { width: 10px; height: 10px; border-radius: 50%; }
-.conn-status-dot.on  { background: var(--success); box-shadow: 0 0 8px var(--success); }
-.conn-status-dot.off { background: var(--text-muted); }
-
-.conn-actions { display: flex; flex-direction: column; gap: 8px; }
-
-.conn-log {
-  background: var(--bg-panel-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-.conn-log-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  font-size: 12px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.conn-log pre {
-  padding: 14px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text);
-  white-space: pre-wrap;
-  max-height: 260px;
-  overflow-y: auto;
-}
+.conn-row { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); }
+.conn-info { flex: 1; display: flex; flex-direction: column; gap: var(--sp-1); }
+.conn-label { display: flex; align-items: center; gap: var(--sp-2); font-weight: 600; }
+.conn-host  { font-size: var(--text-caption); color: var(--text-secondary); font-family: var(--font-mono); }
+.conn-error { font-size: var(--text-caption); color: var(--danger); margin-top: var(--sp-1); }
+.conn-actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-2); }
+.conn-output { font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; color: var(--text-primary); line-height: 1.6; max-height: 300px; overflow-y: auto; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
