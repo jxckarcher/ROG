@@ -48,7 +48,7 @@
 /* Ghost — minimal weight */
 .btn-ghost {
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   border: none;
   height: auto;
   padding: var(--sp-1) var(--sp-2);
@@ -57,10 +57,45 @@
   border-radius: var(--r-sm);
 }
 .btn-ghost:hover { color: var(--text-primary); background: var(--surface-hover); }
+/* Disabled ghost: keep icon visible at reduced opacity (global 0.38 is too dark for icons) */
+.btn-ghost:disabled { opacity: 0.30; }
 
 /* Sizes */
 .btn-sm { height: 36px; padding: 0 var(--sp-4); font-size: var(--text-caption); }
 .btn-xs { height: 28px; padding: 0 var(--sp-3); font-size: var(--text-caption); }
+
+/* ── Icon-only button — explicit SVG rules, never relies on CSS inheritance ── */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+/* Explicit SVG rules — these win over any SVG presentation attributes */
+.icon-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  opacity: 1;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.icon-btn:hover:not(:disabled) { background: var(--surface-hover); color: var(--text-primary); }
+.icon-btn:disabled { opacity: 0.30; cursor: not-allowed; pointer-events: none; }
+/* Accent tint variant */
+.icon-btn-accent { color: var(--accent-text); }
+.icon-btn-accent:hover:not(:disabled) { background: var(--accent-soft); }
 
 /* --- Inputs --- */
 .input, .select, textarea.input {

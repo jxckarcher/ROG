@@ -1,26 +1,35 @@
 @import './tokens.css';
 
 /* ============================================
-   THEMES — only color/shadow vars change.
-   Structure/spacing never changes per theme.
+   COLOR MODES — night / day
+   Accent vars (--accent, --accent-soft, etc.) are set via JS on init/change.
    ============================================ */
 
-:root, [data-theme="cyberpunk"] {
+/* Default accent fallback — JS overrides on mount */
+:root {
   --accent:       #00e5c3;
   --accent-soft:  rgba(0, 229, 195, 0.12);
   --accent-text:  #00e5c3;
+  --glow-accent:  0 0 0 2px rgba(0, 229, 195, 0.35);
+}
+
+/* Semantic colors */
+:root {
   --danger:       #e5534b;
   --danger-soft:  rgba(229, 83, 75, 0.12);
   --warn:         #e5a84b;
   --warn-soft:    rgba(229, 168, 75, 0.12);
   --success:      #3fb950;
   --success-soft: rgba(63, 185, 80, 0.12);
+}
 
-  --bg:           #0d0d12;
-  --surface-1:    #13131a;
-  --surface-2:    #1a1a24;
-  --surface-3:    #21212e;
-  --surface-hover: rgba(255,255,255,0.05);
+/* ── Night (default) ────────────────────────────────────────────────────── */
+:root, [data-mode="night"] {
+  --bg:             #0d0d12;
+  --surface-1:      #13131a;
+  --surface-2:      #1a1a24;
+  --surface-3:      #21212e;
+  --surface-hover:  rgba(255,255,255,0.05);
 
   --border-subtle:  rgba(255,255,255,0.06);
   --border-default: rgba(255,255,255,0.10);
@@ -33,49 +42,35 @@
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
-
-  --glow-accent: 0 0 0 2px rgba(0, 229, 195, 0.35);
 }
 
-[data-theme="midnight"] {
-  --accent:       #8b7cf6;
-  --accent-soft:  rgba(139, 124, 246, 0.12);
-  --accent-text:  #a598f8;
-  --danger: #e5534b; --danger-soft: rgba(229,83,75,0.12);
-  --warn: #e5a84b; --warn-soft: rgba(229,168,75,0.12);
-  --success: #3fb950; --success-soft: rgba(63,185,80,0.12);
-  --bg: #09090f; --surface-1: #111118; --surface-2: #18181f; --surface-3: #1f1f28;
-  --surface-hover: rgba(255,255,255,0.05);
-  --border-subtle: rgba(255,255,255,0.06); --border-default: rgba(255,255,255,0.10); --border-strong: rgba(255,255,255,0.18);
-  --text-primary: rgba(255,255,255,0.92); --text-secondary: rgba(255,255,255,0.52); --text-tertiary: rgba(255,255,255,0.28);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4); --shadow-md: 0 4px 16px rgba(0,0,0,0.5); --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
-  --glow-accent: 0 0 0 2px rgba(139,124,246,0.35);
-}
+/* ── Day ────────────────────────────────────────────────────────────────── */
+[data-mode="day"] {
+  --bg:             #f2f2f7;
+  --surface-1:      #ffffff;
+  --surface-2:      #f8f8fc;
+  --surface-3:      #ededf2;
+  --surface-hover:  rgba(0,0,0,0.04);
 
-[data-theme="matrix"] {
-  --accent: #39d353; --accent-soft: rgba(57,211,83,0.10); --accent-text: #4de068;
-  --danger: #e5534b; --danger-soft: rgba(229,83,75,0.12);
-  --warn: #e5a84b; --warn-soft: rgba(229,168,75,0.12);
-  --success: #3fb950; --success-soft: rgba(63,185,80,0.12);
-  --bg: #020802; --surface-1: #080f08; --surface-2: #0e170e; --surface-3: #131e13;
-  --surface-hover: rgba(57,211,83,0.06);
-  --border-subtle: rgba(57,211,83,0.08); --border-default: rgba(57,211,83,0.14); --border-strong: rgba(57,211,83,0.25);
-  --text-primary: rgba(180,255,180,0.92); --text-secondary: rgba(180,255,180,0.50); --text-tertiary: rgba(180,255,180,0.28);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.5); --shadow-md: 0 4px 16px rgba(0,0,0,0.6); --shadow-lg: 0 8px 32px rgba(0,0,0,0.7);
-  --glow-accent: 0 0 0 2px rgba(57,211,83,0.30);
-}
+  --border-subtle:  rgba(0,0,0,0.06);
+  --border-default: rgba(0,0,0,0.10);
+  --border-strong:  rgba(0,0,0,0.20);
 
-[data-theme="light"] {
-  --accent: #0066cc; --accent-soft: rgba(0,102,204,0.10); --accent-text: #0057b3;
-  --danger: #cc2200; --danger-soft: rgba(204,34,0,0.10);
-  --warn: #996600; --warn-soft: rgba(153,102,0,0.10);
-  --success: #1a7f37; --success-soft: rgba(26,127,55,0.10);
-  --bg: #f2f2f7; --surface-1: #ffffff; --surface-2: #f8f8fc; --surface-3: #ededf2;
-  --surface-hover: rgba(0,0,0,0.04);
-  --border-subtle: rgba(0,0,0,0.06); --border-default: rgba(0,0,0,0.10); --border-strong: rgba(0,0,0,0.20);
-  --text-primary: rgba(0,0,0,0.88); --text-secondary: rgba(0,0,0,0.52); --text-tertiary: rgba(0,0,0,0.30);
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.10); --shadow-md: 0 4px 16px rgba(0,0,0,0.12); --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
-  --glow-accent: 0 0 0 2px rgba(0,102,204,0.30);
+  --text-primary:   rgba(0,0,0,0.88);
+  --text-secondary: rgba(0,0,0,0.52);
+  --text-tertiary:  rgba(0,0,0,0.30);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.10);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+
+  /* Semantic overrides for readability on light bg */
+  --danger:      #cc2200;
+  --danger-soft: rgba(204,34,0,0.10);
+  --warn:        #996600;
+  --warn-soft:   rgba(153,102,0,0.10);
+  --success:     #1a7f37;
+  --success-soft: rgba(26,127,55,0.10);
 }
 
 /* ============================================
@@ -84,6 +79,8 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; overflow: hidden; }
+/* rem base — all rem-based tokens respond to the UI scale slider */
+html { font-size: calc(16px * var(--ui-scale, 1)); }
 body {
   background: var(--bg);
   color: var(--text-primary);

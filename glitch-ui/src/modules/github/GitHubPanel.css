@@ -1,0 +1,543 @@
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+.github-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.gh-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4);
+  min-height: 40px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-1);
+}
+
+.gh-auth-banner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--warn-soft);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--text-caption);
+  color: var(--warn);
+  flex-shrink: 0;
+}
+
+.gh-auth-hint {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.gh-auth-hint code {
+  font-family: var(--font-mono);
+  background: var(--surface-2);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* Wrapper that scopes the Ask drawer so it never overlays the toolbar */
+.gh-panes-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.gh-panes {
+  display: grid;
+  grid-template-columns: 240px 260px 1fr;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.gh-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  border-right: 1px solid var(--border-subtle);
+}
+.gh-pane:last-child { border-right: none; }
+
+/* ── Shared: pane header, list, hints ─────────────────────────────────── */
+
+.gh-pane-header {
+  flex-shrink: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-1);
+}
+
+.gh-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-1) 0;
+}
+
+.gh-hint {
+  padding: var(--sp-3) var(--sp-4);
+  color: var(--text-tertiary);
+  font-size: var(--text-caption);
+  font-style: italic;
+}
+
+.gh-pane-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  font-size: var(--text-caption);
+  font-style: italic;
+  padding: var(--sp-6);
+  text-align: center;
+}
+
+.gh-filter {
+  width: 100%;
+  font-size: 12px;
+}
+
+/* ── Toolbar elements ────────────────────────────────────────────────── */
+
+.gh-nav-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+}
+
+.gh-owner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-2);
+  height: 24px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.gh-branch-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  max-width: 180px;
+}
+
+.gh-branch-select {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  height: 28px;
+  padding: 0 var(--sp-2);
+}
+
+.gh-spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Pane: Repos ─────────────────────────────────────────────────────── */
+
+.gh-pane-repos {}
+
+.gh-repo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.gh-repo-item:hover { background: var(--surface-hover, var(--surface-2)); }
+.gh-repo-item.active {
+  background: var(--surface-2);
+  border-left-color: var(--accent);
+}
+
+.gh-repo-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.gh-vis-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.gh-repo-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gh-repo-age {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.gh-repo-desc {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Pane: Directory ─────────────────────────────────────────────────── */
+
+.gh-pane-dir {}
+
+.gh-breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.gh-bc {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.gh-bc-sep {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.gh-bc-label {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.gh-bc-link {
+  color: var(--accent-text, var(--accent));
+  cursor: pointer;
+}
+.gh-bc-link:hover { text-decoration: underline; }
+
+.gh-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  min-height: var(--hit-min, 36px);
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.gh-entry:hover { background: var(--surface-hover, var(--surface-2)); }
+.gh-entry.active {
+  background: var(--surface-2);
+  border-left-color: var(--accent);
+}
+
+.gh-entry-icon {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.gh-entry-name {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gh-entry-size {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* ── Pane: Preview ────────────────────────────────────────────────────── */
+
+.gh-pane-preview {}
+
+.gh-preview-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface-1);
+}
+
+.gh-preview-name {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.gh-preview-size {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.gh-preview-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.gh-code {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+}
+
+/* ── Dir filter ───────────────────────────────────────────────────────── */
+
+.gh-dir-filter {
+  font-size: 11px;
+  padding: 3px var(--sp-2);
+  height: 26px;
+}
+
+/* ── PDF iframe ──────────────────────────────────────────────────────── */
+
+.gh-pdf-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── CSV table ────────────────────────────────────────────────────────── */
+
+.gh-csv-wrap {
+  overflow: auto;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.gh-csv-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  width: max-content;
+  min-width: 100%;
+}
+
+.gh-csv-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.gh-csv-table td {
+  border: 1px solid var(--border-subtle);
+  padding: 3px 8px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gh-csv-table tr:nth-child(even) td {
+  background: var(--surface-2);
+}
+
+/* ── Recent repos header ──────────────────────────────────────────────── */
+
+.gh-recent-header {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-tertiary);
+  padding: var(--sp-1) var(--sp-3);
+  margin-top: var(--sp-1);
+}
+
+/* ── Ask Glitch drawer ────────────────────────────────────────────────── */
+
+.gh-ask-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(400px, 45%);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-1);
+  border-left: 1px solid var(--border-subtle);
+  box-shadow: -8px 0 32px rgba(0,0,0,0.3);
+  z-index: 50;
+}
+
+.gh-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  background: var(--surface-1);
+  min-height: 40px;
+}
+
+.gh-drawer-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.gh-drawer-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.gh-drawer-composer {
+  display: flex;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.gh-drawer-input {
+  flex: 1;
+  resize: none;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.gh-drawer-send {
+  width: 36px;
+  height: 54px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Shared chat bubble styles (reused in drawer) */
+.gh-ask-drawer .ws-chat-msg {
+  max-width: 92%;
+  border-radius: var(--r-md);
+  padding: var(--sp-2) var(--sp-3);
+}
+.gh-ask-drawer .ws-msg-user {
+  align-self: flex-end;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+.gh-ask-drawer .ws-msg-glitch {
+  align-self: flex-start;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+}
+.gh-ask-drawer .ws-msg-text {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.gh-ask-drawer .ws-chat-system {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  text-align: center;
+  padding: var(--sp-1) 0;
+}
+.gh-ask-drawer .ws-typing {
+  display: flex;
+  gap: 4px;
+  padding: 2px 0;
+}
+.gh-ask-drawer .ws-typing span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  animation: gh-bounce 1.2s infinite;
+}
+.gh-ask-drawer .ws-typing span:nth-child(2) { animation-delay: 0.2s; }
+.gh-ask-drawer .ws-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes gh-bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-5px); }
+}

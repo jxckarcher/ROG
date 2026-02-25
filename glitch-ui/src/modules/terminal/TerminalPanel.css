@@ -77,3 +77,65 @@
 }
 .term-bare-input::placeholder { color: var(--text-tertiary); }
 .term-input-row:focus-within { background: var(--surface-2); border-top-color: var(--accent); }
+
+/* ── AI mode ──────────────────────────────────────────────────────────── */
+
+.term-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  font-size: var(--text-caption);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 28px;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.term-mode-shell {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+.term-mode-shell:hover { color: var(--accent-text); border-color: var(--accent); }
+.term-mode-ai {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.term-mode-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.term-ai-divider {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  padding: var(--sp-2) 0 var(--sp-1);
+  font-family: var(--font-mono);
+  opacity: 0.6;
+}
+
+.term-ai-user pre {
+  color: var(--accent-text);
+  opacity: 0.9;
+}
+
+.term-ai-glitch pre {
+  color: var(--text-primary);
+  background: var(--surface-2);
+  border-left: 2px solid var(--accent);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  margin-top: 2px;
+}
+
+.term-ai-prompt {
+  color: var(--accent-text) !important;
+  opacity: 1 !important;
+  font-size: 16px !important;
+}

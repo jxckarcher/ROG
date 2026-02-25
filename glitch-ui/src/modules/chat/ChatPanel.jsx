@@ -1,15 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../core/store';
-import { Send, Wifi, WifiOff } from 'lucide-react';
+import { Wifi, WifiOff } from 'lucide-react';
 import './ChatPanel.css';
 
 export default function ChatPanel() {
-  const { connected, wsConnected, chatMessages, chatSending, sendChat, clearChat, connectWs, tunnelActive } = useStore();
+  const { connected, wsConnected, chatMessages, chatSending, sendChat, clearChat, connectWs, tunnelActive, chatPrefill, clearChatPrefill } = useStore();
   const [input, setInput] = useState('');
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [chatMessages]);
+
+  // Consume prefill from "Ask Glitch" context chip in GitHub panel
+  useEffect(() => {
+    if (chatPrefill) {
+      setInput(chatPrefill);
+      clearChatPrefill();
+      inputRef.current?.focus();
+    }
+  }, [chatPrefill]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const send = async () => {
     const text = input.trim();
@@ -21,22 +30,21 @@ export default function ChatPanel() {
 
   return (
     <div className="chat-panel panel-wrap">
-      {!connected && <div className="chat-hint">Go to Connection and connect first.</div>}
-
-      {connected && (
-        <div className="chat-status-bar">
-          {wsConnected
-            ? <><Wifi size={12} /><span className="chat-status-on">Live</span></>
-            : <><WifiOff size={12} /><span className="chat-status-off">SSH fallback</span>
-                {tunnelActive
-                  ? <button className="btn-ghost" onClick={connectWs}>Reconnect</button>
-                  : <span className="chat-status-hint">Start tunnel for live mode</span>
-                }
-              </>
-          }
-          <button className="btn-ghost" style={{ marginLeft: 'auto' }} onClick={clearChat}>Clear</button>
-        </div>
-      )}
+      <div className="chat-status-bar">
+        {wsConnected ? (
+          <><Wifi size={12} /><span className="chat-status-on">⚡ Live mode active</span></>
+        ) : connected ? (
+          <><WifiOff size={12} /><span className="chat-status-off">SSH fallback</span>
+            {tunnelActive
+              ? <button className="btn-ghost" onClick={connectWs}>Reconnect WS</button>
+              : <span className="chat-status-hint">— start tunnel for live mode</span>
+            }
+          </>
+        ) : (
+          <><WifiOff size={12} /><span className="chat-status-off">Not connected</span></>
+        )}
+        <button className="btn-ghost" style={{ marginLeft: 'auto' }} onClick={clearChat}>Clear</button>
+      </div>
 
       <div className="chat-messages">
         {chatMessages.map((m, i) => <ChatMsg key={i} msg={m} />)}
@@ -60,9 +68,13 @@ export default function ChatPanel() {
           disabled={!connected || chatSending}
           rows={2}
         />
-        <button className="btn btn-primary chat-send" onClick={send}
-          disabled={!connected || chatSending || !input.trim()}>
-          <Send size={16} />
+        <button
+          data-testid="send-btn"
+          className="btn btn-primary chat-send"
+          onClick={send}
+          disabled={!connected || chatSending || !input.trim()}
+        >
+          <span style={{ color: '#000', fontWeight: 900, fontSize: 20, lineHeight: 1, userSelect: 'none', display: 'block' }}>➤</span>
         </button>
       </div>
     </div>

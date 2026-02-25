@@ -1,0 +1,121 @@
+.lockscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lock-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: var(--sp-7);
+}
+
+.lock-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.lock-glyph {
+  font-size: 32px;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px var(--accent));
+}
+
+.lock-name {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.lock-status {
+  margin: 0;
+  font-size: var(--text-body);
+  color: var(--text-secondary);
+  text-align: center;
+  min-height: 1.25rem;
+}
+
+/* PIN dots */
+.lock-dots {
+  display: flex;
+  gap: 14px;
+}
+
+.lock-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid var(--border-subtle);
+  background: transparent;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+
+.lock-dot.filled {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+/* Shake animation */
+@keyframes shake {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(-8px); }
+  30%  { transform: translateX(8px); }
+  45%  { transform: translateX(-6px); }
+  60%  { transform: translateX(6px); }
+  75%  { transform: translateX(-3px); }
+  90%  { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+.lock-dots.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Number pad */
+.lock-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 60px);
+  gap: var(--sp-2);
+}
+
+.lock-key {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--r-md) !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle) !important;
+  background: var(--surface-2) !important;
+  color: var(--text-primary) !important;
+  cursor: pointer;
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+
+.lock-key:hover {
+  background: var(--surface-hover, var(--surface-3)) !important;
+  transform: scale(1.05);
+}
+
+.lock-key:active { transform: scale(0.96); }
+
+.lock-key-submit {
+  color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.lock-key-del {
+  font-size: 16px !important;
+  color: var(--text-tertiary) !important;
+}

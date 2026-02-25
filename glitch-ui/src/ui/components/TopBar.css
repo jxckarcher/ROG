@@ -47,3 +47,22 @@
 .chip-on .chip-value { color: var(--success); }
 
 .chip-warn { background: var(--warn-soft); border-color: transparent; color: var(--warn); font-weight: 600; font-size: var(--text-caption); }
+
+.chip-model { background: var(--surface-2); border-color: var(--border-default); }
+.chip-model .chip-value { color: var(--accent-text); font-weight: 600; }
+
+.topbar-model-chip {
+  cursor: pointer;
+  user-select: none;
+  transition: background var(--t-fast), border-color var(--t-fast);
+  font-family: var(--font-sans);
+}
+.topbar-model-chip:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+.topbar-build {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  opacity: 0.5;
+  user-select: none;
+}

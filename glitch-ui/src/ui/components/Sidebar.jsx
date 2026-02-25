@@ -1,15 +1,18 @@
 import { useStore } from '../../core/store';
-import { MessageSquare, Calendar, Brain, Coins, SquareTerminal, Network } from 'lucide-react';
+import { MessageSquare, Calendar, Brain, Coins, SquareTerminal, Network, Bot, Settings, Github, Layers, Lock } from 'lucide-react';
 import './Sidebar.css';
 
 const NAV = [
   {
     section: 'Assistant',
     items: [
-      { id: 'chat',      Icon: MessageSquare,  label: 'Chat' },
-      { id: 'scheduler', Icon: Calendar,        label: 'Scheduler' },
-      { id: 'memory',    Icon: Brain,           label: 'Memory' },
-      { id: 'budget',    Icon: Coins,           label: 'Budget' },
+      { id: 'chat',       Icon: MessageSquare,  label: 'Chat' },
+      { id: 'agents',     Icon: Bot,            label: 'Agents' },
+      { id: 'scheduler',  Icon: Calendar,       label: 'Scheduler' },
+      { id: 'memory',     Icon: Brain,          label: 'Memory' },
+      { id: 'budget',     Icon: Coins,          label: 'Budget' },
+      { id: 'github',     Icon: Github,         label: 'GitHub' },
+      { id: 'workspaces', Icon: Layers,         label: 'Workspaces' },
     ]
   },
   {
@@ -17,19 +20,13 @@ const NAV = [
     items: [
       { id: 'terminal',   Icon: SquareTerminal, label: 'Terminal' },
       { id: 'connection', Icon: Network,        label: 'Connection' },
+      { id: 'settings',   Icon: Settings,       label: 'Settings' },
     ]
   }
 ];
 
-const THEMES = [
-  { id: 'cyberpunk', color: '#00e5c3' },
-  { id: 'midnight',  color: '#8b7cf6' },
-  { id: 'matrix',    color: '#39d353' },
-  { id: 'light',     color: '#0066cc' },
-];
-
 export default function Sidebar() {
-  const { activeModule, setActiveModule, connected, theme, setTheme } = useStore();
+  const { activeModule, setActiveModule, connected, lock } = useStore();
 
   return (
     <aside className="sidebar">
@@ -61,20 +58,10 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <div className="sidebar-theme">
-          <span className="sidebar-theme-label">Theme</span>
-          <div className="sidebar-theme-swatches">
-            {THEMES.map(t => (
-              <button
-                key={t.id}
-                className={`swatch ${theme === t.id ? 'swatch-active' : ''}`}
-                style={{ '--swatch-color': t.color }}
-                onClick={() => setTheme(t.id)}
-                title={t.id}
-              />
-            ))}
-          </div>
-        </div>
+        <button className="sidebar-lock-btn" onClick={lock} title="Lock">
+          <Lock size={13} />
+          <span>Lock</span>
+        </button>
       </div>
     </aside>
   );

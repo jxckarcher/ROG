@@ -1,16 +1,318 @@
-.sched-remind-row { display: flex; gap: var(--sp-3); align-items: center; margin-top: var(--sp-2); }
+/* ── Tab bar ──────────────────────────────────────────────────────────── */
+
+.sched-tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin: 0 calc(-1 * var(--sp-4));
+  padding: 0 var(--sp-4);
+}
+
+.sched-tab {
+  padding: var(--sp-2) var(--sp-4);
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: var(--text-body);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--t-fast), border-color var(--t-fast);
+}
+.sched-tab:hover { color: var(--text-secondary); }
+.sched-tab-active {
+  color: var(--accent-text);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── Form layout ──────────────────────────────────────────────────────── */
+
+.sched-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+}
+
+.sched-remind-row {
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
 .sched-time-sel { width: auto; flex-shrink: 0; }
-.sched-list-card { flex: 1; overflow: hidden; display: flex; flex-direction: column; min-height: 200px; }
-.sched-list-header { display: flex; align-items: center; justify-content: space-between; }
+
+.sched-field-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.sched-field-label {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  min-width: 100px;
+  padding-top: 6px;
+  flex-shrink: 0;
+}
+
+.sched-msg-textarea {
+  resize: vertical;
+  font-size: 12px;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.sched-time-input { width: 110px; }
+
+.sched-form-hint {
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  margin-top: calc(-1 * var(--sp-1));
+}
+.sched-form-hint code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+/* ── Overnight banner ─────────────────────────────────────────────────── */
+
+.sched-overnight-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: var(--r-sm);
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+}
+
+/* ── Jobs list ────────────────────────────────────────────────────────── */
+
+.sched-list-card {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.sched-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .sched-jobs { overflow-y: auto; }
-.sched-job { border-bottom: 1px solid var(--border-subtle); border-radius: 0; }
+
+.sched-job {
+  border-bottom: 1px solid var(--border-subtle);
+}
 .sched-job:last-child { border-bottom: none; }
 .sched-job.job-dup { background: var(--warn-soft); }
-.sched-job-main { flex: 1; display: flex; flex-direction: column; gap: var(--sp-1); }
-.sched-job-name { font-weight: 600; }
-.sched-job-schedule { font-size: var(--text-caption); color: var(--text-secondary); font-family: var(--font-mono); }
-.sched-job-meta { display: flex; flex-direction: column; align-items: flex-end; gap: var(--sp-1); }
-.sched-job-time { font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); }
-.sched-job-actions { display: flex; gap: var(--sp-1); }
+.sched-job.job-disabled { opacity: 0.55; }
+
+.sched-job-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  min-height: 44px;
+}
+
+.sched-expand-btn {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+.sched-job-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sched-job-name {
+  font-weight: 600;
+  font-size: var(--text-body);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sched-job-schedule {
+  font-size: var(--text-caption);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.sched-job-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.sched-job-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.sched-job-actions {
+  display: flex;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+}
+
+/* ── Job history expand ───────────────────────────────────────────────── */
+
+.sched-job-history {
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.sched-history-pre {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  color: var(--text-secondary);
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── View header (Agenda / New Job tabs) ──────────────────────────────── */
+
+.sched-view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-2) 0 var(--sp-3);
+}
+
+.sched-view-tabs {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+.sched-view-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-caption);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+  min-height: 32px;
+}
+.sched-view-tab:hover { color: var(--accent-text); border-color: var(--accent); }
+.sched-view-tab.active {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── Agenda groups ────────────────────────────────────────────────────── */
+
+.sched-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+}
+
+.sched-group {
+  margin-bottom: var(--sp-4);
+}
+
+.sched-group-label {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0 0 var(--sp-2);
+  display: flex;
+  align-items: center;
+}
+
+/* ── Agenda card ──────────────────────────────────────────────────────── */
+
+.sched-agenda-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+  margin-bottom: var(--sp-2);
+  overflow: hidden;
+  transition: border-color var(--t-fast);
+}
+.sched-agenda-card:hover { border-color: var(--accent); }
+.sched-agenda-card.job-disabled { opacity: 0.55; }
+.sched-agenda-card.job-dup { border-color: var(--warn); }
+
+.sched-agenda-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-3);
+  min-height: 52px;
+}
+
+.sched-agenda-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.sched-agenda-name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.sched-agenda-meta-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.sched-agenda-schedule {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+.sched-agenda-next {
+  font-size: 11px;
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+.sched-agenda-last {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
