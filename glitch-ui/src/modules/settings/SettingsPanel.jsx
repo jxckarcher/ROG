@@ -11,18 +11,41 @@ const SHAPES = [
 ];
 
 const PROFILE_SLOTS = [
-  { id: 'chat',       label: 'Chat',       desc: 'Fast & cheap, quick questions' },
-  { id: 'workspaces', label: 'Workspaces', desc: 'Balanced, file analysis & edits' },
-  { id: 'autonomy',   label: 'Autonomy',   desc: 'Powerful, overnight agent runs' },
+  { id: 'chat',       label: 'Chat',       desc: 'Fast & cheap — general conversation' },
+  { id: 'workspaces', label: 'Workspaces', desc: 'Balanced — file analysis & edits' },
+  { id: 'autonomy',   label: 'Autonomy',   desc: 'Powerful — overnight agent runs' },
 ];
 
-const MODELS = [
-  { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5 — fast & cheap' },
-  { id: 'claude-sonnet-4-5',         label: 'Sonnet 4.5 — balanced' },
-  { id: 'claude-opus-4-5',           label: 'Opus 4.5 — powerful' },
-  { id: 'claude-opus-4-6',           label: 'Opus 4.6 — latest' },
-  { id: '__custom__',                label: 'Custom…' },
+// ── Model catalogue (grouped by provider) ────────────────────────────────────
+const PROVIDERS = [
+  {
+    id: 'anthropic',
+    label: 'Anthropic',
+    badge: '#d97706',
+    models: [
+      { id: 'anthropic/claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku — fast & cheap' },
+      { id: 'anthropic/claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet — balanced' },
+      { id: 'anthropic/claude-sonnet-4-5',          label: 'Claude Sonnet 4.5 — capable' },
+      { id: 'anthropic/claude-opus-4-5',            label: 'Claude Opus 4.5 — powerful' },
+      { id: 'anthropic/claude-sonnet-4-6',          label: 'Claude Sonnet 4.6 — latest' },
+    ],
+  },
+  {
+    id: 'openrouter',
+    label: 'OpenRouter',
+    badge: '#7c3aed',
+    models: [
+      { id: 'openrouter/deepseek/deepseek-chat-v3-0324',      label: 'DeepSeek v3 — fast & cheap' },
+      { id: 'openrouter/qwen/qwen-2.5-coder-32b-instruct',    label: 'Qwen 2.5 Coder 32B — coding tasks' },
+      { id: 'openrouter/google/gemini-2.0-flash-001',         label: 'Gemini 2.0 Flash — speed + large context' },
+      { id: 'openrouter/google/gemini-2.5-pro-preview-03-25', label: 'Gemini 2.5 Pro — reasoning' },
+      { id: 'openrouter/mistralai/mistral-large-latest',      label: 'Mistral Large — docs & structured output' },
+      { id: 'openrouter/meta-llama/llama-3.3-70b-instruct',   label: 'Llama 3.3 70B — general purpose' },
+    ],
+  },
 ];
+
+const ALL_MODELS_FLAT = PROVIDERS.flatMap(p => p.models);
 
 const SECTION_LABEL = {
   margin: 0, fontSize: 11, fontWeight: 600,
@@ -35,24 +58,50 @@ const CARD = {
   display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)',
 };
 
-// ── findModelPath ──────────────────────────────────────────────────────────────
-// Returns { value, path } where path is an array of keys, e.g. ['llm', 'model']
+// ── Provider badge ─────────────────────────────────────────────────────────────
+function ProviderBadge({ modelId }) {
+  const provider = PROVIDERS.find(p => modelId?.startsWith(p.id));
+  if (!provider) return null;
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+      padding: '1px 5px', borderRadius: 4,
+      background: provider.badge + '22', color: provider.badge, flexShrink: 0,
+    }}>
+      {provider.label.toUpperCase()}
+    </span>
+  );
+}
 
+// ── Grouped select ─────────────────────────────────────────────────────────────
+function ModelSelect({ value, onChange, style = {} }) {
+  return (
+    <select className="input" value={value} onChange={e => onChange(e.target.value)} style={{ fontSize: 'var(--text-body)', ...style }}>
+      {PROVIDERS.map(p => (
+        <optgroup key={p.id} label={`── ${p.label}`}>
+          {p.models.map(m => (
+            <option key={m.id} value={m.id}>{m.label}</option>
+          ))}
+        </optgroup>
+      ))}
+      <option value="__custom__">Custom…</option>
+    </select>
+  );
+}
+
+// ── findModelPath ──────────────────────────────────────────────────────────────
 function findModelPath(obj, depth = 0, path = []) {
   if (!obj || typeof obj !== 'object' || depth > 5) return null;
-  // First pass: keys containing "model"
   for (const [k, v] of Object.entries(obj)) {
     if (k.toLowerCase().includes('model') && typeof v === 'string' && v.length > 2)
       return { value: v, path: [...path, k] };
   }
-  // Second pass: string values that look like AI model identifiers (not filesystem paths)
   for (const [k, v] of Object.entries(obj)) {
     if (typeof v === 'string' && !v.startsWith('/') && !v.startsWith('.') && (
       /^(anthropic|openai|openrouter|google|meta-llama|mistral)\//i.test(v) ||
       /claude|haiku|sonnet|opus|gpt|llama|gemini|mistral/i.test(v)
     )) return { value: v, path: [...path, k] };
   }
-  // Recurse into nested objects
   for (const [k, v] of Object.entries(obj)) {
     if (v && typeof v === 'object') {
       const found = findModelPath(v, depth + 1, [...path, k]);
@@ -101,7 +150,8 @@ export default function SettingsPanel() {
       if (result) {
         setModelInfo({ loading: false, value: result.value, error: '' });
         setModelPath(result.path);
-        setSelectedModel(MODELS.find(m => m.id === result.value) ? result.value : '__custom__');
+        const known = ALL_MODELS_FLAT.find(m => m.id === result.value);
+        setSelectedModel(known ? result.value : '__custom__');
         setCustomModel(result.value);
       } else {
         setModelInfo({ loading: false, value: '', error: '(model key not found — click View raw to inspect)' });
@@ -122,7 +172,6 @@ export default function SettingsPanel() {
       const keyPath = modelPath || ['model'];
       setNestedKey(cfg, keyPath, newModel);
       const newJson = JSON.stringify(cfg, null, 2);
-      // base64-encode to avoid quoting issues; Python decodes on VPS
       const b64 = btoa(unescape(encodeURIComponent(newJson)));
       await runCmd(`python3 -c "import base64; open('/root/.openclaw/openclaw.json','wb').write(base64.b64decode('${b64}'))"`);
       setEditingModel(false);
@@ -145,99 +194,54 @@ export default function SettingsPanel() {
       <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
         <h3 style={SECTION_LABEL}>Appearance</h3>
         <div style={CARD}>
-
-          {/* Night / Day / Auto */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)' }}>Mode</span>
             <div style={{ display: 'flex', gap: 0, background: 'var(--surface-3)', borderRadius: 'var(--r-sm)', padding: 2, width: 'fit-content' }}>
               {['night', 'day', 'auto'].map(m => (
-                <button
-                  key={m}
-                  onClick={() => setThemeMode(m)}
-                  style={{
-                    padding: 'var(--sp-1) var(--sp-4)',
-                    border: 'none',
-                    borderRadius: 'var(--r-sm)',
-                    background: themeMode === m ? 'var(--surface-1)' : 'transparent',
-                    color: themeMode === m ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                    fontWeight: themeMode === m ? 600 : 400,
-                    fontSize: 'var(--text-body)',
-                    cursor: 'pointer',
-                    textTransform: 'capitalize',
-                    transition: 'background var(--t-fast), color var(--t-fast)',
-                  }}
-                >
-                  {m}
-                </button>
+                <button key={m} onClick={() => setThemeMode(m)} style={{
+                  padding: 'var(--sp-1) var(--sp-4)', border: 'none', borderRadius: 'var(--r-sm)',
+                  background: themeMode === m ? 'var(--surface-1)' : 'transparent',
+                  color: themeMode === m ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                  fontWeight: themeMode === m ? 600 : 400, fontSize: 'var(--text-body)',
+                  cursor: 'pointer', textTransform: 'capitalize',
+                  transition: 'background var(--t-fast), color var(--t-fast)',
+                }}>{m}</button>
               ))}
             </div>
           </div>
 
-          {/* Accent color */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)' }}>Accent color</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)', flexWrap: 'wrap' }}>
               {ACCENT_PRESETS.map(hex => (
-                <button
-                  key={hex}
-                  onClick={() => setAccentColor(hex)}
-                  title={hex}
-                  style={{
-                    width: 22, height: 22,
-                    borderRadius: '50%',
-                    background: hex,
-                    border: accentColor === hex ? '2px solid var(--text-primary)' : '2px solid transparent',
-                    outline: accentColor === hex ? `2px solid ${hex}` : 'none',
-                    outlineOffset: 2,
-                    cursor: 'pointer',
-                    padding: 0,
-                    flexShrink: 0,
-                  }}
-                />
+                <button key={hex} onClick={() => setAccentColor(hex)} title={hex} style={{
+                  width: 22, height: 22, borderRadius: '50%', background: hex,
+                  border: accentColor === hex ? '2px solid var(--text-primary)' : '2px solid transparent',
+                  outline: accentColor === hex ? `2px solid ${hex}` : 'none', outlineOffset: 2,
+                  cursor: 'pointer', padding: 0, flexShrink: 0,
+                }} />
               ))}
-              <input
-                type="color"
-                value={accentColor}
-                onChange={e => setAccentColor(e.target.value)}
-                title="Custom color"
-                style={{
-                  width: 26, height: 26,
-                  borderRadius: 'var(--r-sm)',
-                  border: '1px solid var(--border-subtle)',
-                  background: 'var(--surface-3)',
-                  cursor: 'pointer',
-                  padding: 2,
-                }}
-              />
+              <input type="color" value={accentColor} onChange={e => setAccentColor(e.target.value)} title="Custom color"
+                style={{ width: 26, height: 26, borderRadius: 'var(--r-sm)', border: '1px solid var(--border-subtle)', background: 'var(--surface-3)', cursor: 'pointer', padding: 2 }} />
             </div>
           </div>
 
-          {/* Shape */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)' }}>Style</span>
             <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
               {SHAPES.map(s => (
-                <button
-                  key={s.id}
-                  onClick={() => setThemeShape(s.id)}
-                  style={{
-                    padding: 'var(--sp-1) var(--sp-3)',
-                    border: `1px solid ${themeShape === s.id ? 'var(--accent)' : 'var(--border-subtle)'}`,
-                    borderRadius: s.id === 'pill' ? 999 : s.id === 'sharp' ? 2 : 'var(--r-sm)',
-                    background: themeShape === s.id ? 'var(--accent-soft)' : 'var(--surface-2)',
-                    color: themeShape === s.id ? 'var(--accent-text)' : 'var(--text-primary)',
-                    fontWeight: themeShape === s.id ? 600 : 400,
-                    fontSize: 'var(--text-body)',
-                    cursor: 'pointer',
-                    transition: 'background var(--t-fast), border-color var(--t-fast)',
-                  }}
-                >
-                  {s.label}
-                </button>
+                <button key={s.id} onClick={() => setThemeShape(s.id)} style={{
+                  padding: 'var(--sp-1) var(--sp-3)',
+                  border: `1px solid ${themeShape === s.id ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                  borderRadius: s.id === 'pill' ? 999 : s.id === 'sharp' ? 2 : 'var(--r-sm)',
+                  background: themeShape === s.id ? 'var(--accent-soft)' : 'var(--surface-2)',
+                  color: themeShape === s.id ? 'var(--accent-text)' : 'var(--text-primary)',
+                  fontWeight: themeShape === s.id ? 600 : 400, fontSize: 'var(--text-body)',
+                  cursor: 'pointer', transition: 'background var(--t-fast), border-color var(--t-fast)',
+                }}>{s.label}</button>
               ))}
             </div>
           </div>
-
         </div>
       </section>
 
@@ -247,20 +251,13 @@ export default function SettingsPanel() {
         <div style={CARD}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)', flexShrink: 0 }}>85%</span>
-            <input
-              type="range" min={0.85} max={1.3} step={0.05}
-              value={uiScale}
-              style={{ flex: 1 }}
-              onChange={e => setUiScale(parseFloat(e.target.value))}
-            />
+            <input type="range" min={0.85} max={1.3} step={0.05} value={uiScale}
+              style={{ flex: 1 }} onChange={e => setUiScale(parseFloat(e.target.value))} />
             <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)', flexShrink: 0 }}>130%</span>
             <span style={{
-              minWidth: 40, textAlign: 'right',
-              fontFamily: 'var(--font-mono)', fontSize: 'var(--text-caption)',
-              color: 'var(--text-primary)', fontWeight: 600,
-            }}>
-              {Math.round(uiScale * 100)}%
-            </span>
+              minWidth: 40, textAlign: 'right', fontFamily: 'var(--font-mono)',
+              fontSize: 'var(--text-caption)', color: 'var(--text-primary)', fontWeight: 600,
+            }}>{Math.round(uiScale * 100)}%</span>
             <button className="btn-ghost btn-xs" onClick={() => setUiScale(1)}>Reset</button>
           </div>
           <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)', margin: 0 }}>
@@ -273,40 +270,34 @@ export default function SettingsPanel() {
       <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
         <h3 style={SECTION_LABEL}>Model Profiles</h3>
         <div style={CARD}>
-          {PROFILE_SLOTS.map(slot => (
-            <div key={slot.id} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
-                <span style={{ minWidth: 90, fontSize: 'var(--text-body)', color: 'var(--text-secondary)', flexShrink: 0 }}>
-                  {slot.label}
-                </span>
-                <select
-                  className="input"
-                  value={modelProfiles[slot.id] || ''}
-                  onChange={e => setModelProfile(slot.id, e.target.value)}
-                  style={{ flex: 1, fontSize: 'var(--text-body)' }}
-                >
-                  {MODELS.filter(m => m.id !== '__custom__').map(m => (
-                    <option key={m.id} value={m.id}>{m.label}</option>
-                  ))}
-                </select>
-                <span style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)', flexShrink: 0, minWidth: 160 }}>
-                  {slot.desc}
-                </span>
-              </div>
-            </div>
-          ))}
-          <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)', margin: 0 }}>
-            Profiles used by chat, workspaces edits, and autonomy agent runs respectively. Persisted locally.
+          <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)', margin: '0 0 var(--sp-1)' }}>
+            Route different task types to the right model. Cheaper for chat, powerful for agents.
           </p>
+          {PROFILE_SLOTS.map(slot => {
+            const current = modelProfiles[slot.id] || '';
+            return (
+              <div key={slot.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
+                  <span style={{ minWidth: 96, fontSize: 'var(--text-body)', color: 'var(--text-secondary)', flexShrink: 0 }}>
+                    {slot.label}
+                  </span>
+                  <ModelSelect value={current} onChange={v => setModelProfile(slot.id, v)} style={{ flex: 1 }} />
+                  <ProviderBadge modelId={current} />
+                </div>
+                <p style={{ margin: 0, fontSize: 10, color: 'var(--text-tertiary)', paddingLeft: 104 }}>
+                  {slot.desc}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* ── Model (active config on VPS) ──────────── */}
+      {/* ── Active Model (VPS config) ─────────────── */}
       <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
         <h3 style={SECTION_LABEL}>Active Model (VPS config)</h3>
         <div style={CARD}>
           {!editingModel ? (
-            /* ── View mode ─────────────────────────── */
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
                 {modelInfo.loading ? (
@@ -314,24 +305,18 @@ export default function SettingsPanel() {
                 ) : modelInfo.error ? (
                   <span style={{ color: 'var(--warn)', fontSize: 'var(--text-caption)', flex: 1 }}>{modelInfo.error}</span>
                 ) : (
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-body)', color: 'var(--text-primary)', flex: 1 }}>
-                    {modelInfo.value || (connected ? '—' : 'Connect first')}
-                  </span>
+                  <>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-body)', color: 'var(--text-primary)', flex: 1 }}>
+                      {modelInfo.value || (connected ? '—' : 'Connect first')}
+                    </span>
+                    <ProviderBadge modelId={modelInfo.value} />
+                  </>
                 )}
-                <button
-                  className="btn-ghost btn-xs"
-                  onClick={loadModel}
-                  disabled={modelInfo.loading || !connected}
-                  title="Reload from VPS"
-                >
+                <button className="btn-ghost btn-xs" onClick={loadModel} disabled={modelInfo.loading || !connected} title="Reload from VPS">
                   <RefreshCw size={11} className={modelInfo.loading ? 'spin' : ''} />
                 </button>
                 {modelInfo.value && (
-                  <button
-                    className="btn-ghost btn-xs"
-                    onClick={() => setEditingModel(true)}
-                    disabled={!connected || !rawConfig}
-                  >
+                  <button className="btn-ghost btn-xs" onClick={() => setEditingModel(true)} disabled={!connected || !rawConfig}>
                     Edit
                   </button>
                 )}
@@ -346,35 +331,21 @@ export default function SettingsPanel() {
                   fontFamily: 'var(--font-mono)', fontSize: 'var(--text-caption)',
                   color: 'var(--text-secondary)', background: 'var(--surface-3)',
                   border: '1px solid var(--border-subtle)', borderRadius: 'var(--r-sm)',
-                  padding: 'var(--sp-3)', overflowX: 'auto', maxHeight: 240, overflowY: 'auto',
-                  margin: 0,
-                }}>
-                  {rawConfig}
-                </pre>
+                  padding: 'var(--sp-3)', overflowX: 'auto', maxHeight: 240, overflowY: 'auto', margin: 0,
+                }}>{rawConfig}</pre>
               )}
             </>
           ) : (
-            /* ── Edit mode ─────────────────────────── */
             <>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
-                <select
-                  className="input"
-                  value={selectedModel}
-                  onChange={e => setSelectedModel(e.target.value)}
-                  style={{ fontSize: 'var(--text-body)' }}
-                >
-                  {MODELS.map(m => (
-                    <option key={m.id} value={m.id}>{m.label}</option>
-                  ))}
-                </select>
+                <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'center' }}>
+                  <ModelSelect value={selectedModel} onChange={setSelectedModel} style={{ flex: 1 }} />
+                  <ProviderBadge modelId={effectiveModel} />
+                </div>
                 {selectedModel === '__custom__' && (
-                  <input
-                    className="input"
-                    placeholder="e.g. claude-sonnet-4-5"
-                    value={customModel}
-                    onChange={e => setCustomModel(e.target.value)}
-                    style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-body)' }}
-                  />
+                  <input className="input" placeholder="e.g. openrouter/deepseek/deepseek-chat-v3-0324"
+                    value={customModel} onChange={e => setCustomModel(e.target.value)}
+                    style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-body)' }} />
                 )}
                 <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)', margin: 0 }}>
                   Will write <span style={{ fontFamily: 'var(--font-mono)' }}>{effectiveModel || '…'}</span> to openclaw.json
@@ -382,25 +353,15 @@ export default function SettingsPanel() {
                 </p>
               </div>
               <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
-                <button
-                  className="btn btn-primary btn-xs"
-                  onClick={saveModel}
-                  disabled={saving || !effectiveModel}
-                >
+                <button className="btn btn-primary btn-xs" onClick={saveModel} disabled={saving || !effectiveModel}>
                   {saving ? 'Saving…' : 'Save'}
                 </button>
-                <button
-                  className="btn-ghost btn-xs"
-                  onClick={() => setEditingModel(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
+                <button className="btn-ghost btn-xs" onClick={() => setEditingModel(false)} disabled={saving}>Cancel</button>
               </div>
             </>
           )}
           <p style={{ fontSize: 'var(--text-caption)', color: 'var(--text-tertiary)', margin: 0 }}>
-            From <span style={{ fontFamily: 'var(--font-mono)' }}>/root/.openclaw/openclaw.json</span>
+            From <span style={{ fontFamily: 'var(--font-mono)' }}>/root/.openclaw/openclaw.json</span> — primary model for this session.
           </p>
         </div>
       </section>
