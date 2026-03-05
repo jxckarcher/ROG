@@ -1,0 +1,51 @@
+{
+  "agents": {
+    "programmer": {
+      "agentId": "programmer-agent",
+      "display": "Programmer Agent",
+      "model": "openrouter/deepseek/deepseek-chat",
+      "capabilities": ["code-generation", "debugging", "testing", "pr-creation"],
+      "costModel": "openrouter",
+      "estimatedCostPerTask": 0.15,
+      "tags": ["coding", "development"]
+    },
+    "researcher": {
+      "agentId": "research-agent",
+      "display": "Research Agent",
+      "model": "openrouter/google/gemini-flash-1.5",
+      "capabilities": ["web-search", "document-analysis", "summarization"],
+      "costModel": "openrouter",
+      "estimatedCostPerTask": 0.05,
+      "tags": ["research", "analysis"]
+    },
+    "scheduler": {
+      "agentId": "scheduler-agent",
+      "display": "Scheduler Agent",
+      "model": "anthropic/claude-haiku-4-5",
+      "capabilities": ["cron-management", "calendar-sync", "task-coordination"],
+      "costModel": "anthropic",
+      "estimatedCostPerTask": 0.01,
+      "tags": ["scheduling", "orchestration"]
+    }
+  },
+  "models": {
+    "openrouter/deepseek/deepseek-chat": {
+      "provider": "openrouter",
+      "inputGBPer1M": 0.14,
+      "outputGBPer1M": 0.28,
+      "tags": ["coding", "reasoning", "cheap"]
+    },
+    "openrouter/google/gemini-flash-1.5": {
+      "provider": "openrouter",
+      "inputGBPer1M": 0.059,
+      "outputGBPer1M": 0.236,
+      "tags": ["fast", "research", "ultra-cheap"]
+    },
+    "anthropic/claude-haiku-4-5": {
+      "provider": "anthropic",
+      "inputGBPer1M": 0.8,
+      "outputGBPer1M": 4.0,
+      "tags": ["fast", "decision-making"]
+    }
+  }
+}

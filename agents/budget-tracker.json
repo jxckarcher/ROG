@@ -1,0 +1,16 @@
+{
+  "config": {
+    "monthlyCapGBP": 50,
+    "warnAtGBP": 40,
+    "hardStopGBP": 50,
+    "currentMonthStart": "2026-03-01",
+    "currentMonthEnd": "2026-03-31"
+  },
+  "tracking": {
+    "spentThisMonthGBP": 0,
+    "tasksCompleted": 0,
+    "tasksErrored": 0,
+    "lastUpdate": null
+  },
+  "executions": []
+}

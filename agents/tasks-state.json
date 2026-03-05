@@ -1,0 +1,19 @@
+{
+  "tasks": {
+    "task_programmer-agent_1772707500199": {
+      "taskId": "task_programmer-agent_1772707500199",
+      "agentId": "programmer-agent",
+      "taskBrief": "Review and optimize auth.js for performance",
+      "status": "completed",
+      "createdAt": "2026-03-05T10:45:00.199Z",
+      "schedule": null,
+      "model": null,
+      "startedAt": "2026-03-05T10:45:00.201Z",
+      "completedAt": "2026-03-05T10:45:02.142Z",
+      "result": "{\"status\":\"reviewed\",\"suggestions\":[\"Add caching\",\"Optimize DB queries\"],\"prUrl\":\"https://github.com/example/pulls/123\"}",
+      "error": null,
+      "costEstimate": 0,
+      "costActual": "0.08"
+    }
+  }
+}
